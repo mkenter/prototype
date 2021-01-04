@@ -23,7 +23,8 @@ ANavGrid::ANavGrid()
 void ANavGrid::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	BoxComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	OriginLocation = BoxComponent->GetComponentLocation() - BoxComponent->GetScaledBoxExtent();
 	GridTileCount = GetGridTileCount();
 	
