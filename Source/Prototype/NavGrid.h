@@ -51,6 +51,9 @@ class PROTOTYPE_API ANavGrid final : public AActor
 
 	UFUNCTION()
     TArray<UNavNode*> RetracePath(UNavNode* StartNode, UNavNode* EndNode);
+
+	UFUNCTION()
+	void CreateGrid();
 	
 public:	
 	// Sets default values for this actor's properties

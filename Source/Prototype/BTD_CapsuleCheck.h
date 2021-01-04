@@ -4,17 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "CustomBTDecoratorBase.h"
-#include "CapsuleCheck.generated.h"
+#include "BTD_CapsuleCheck.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROTOTYPE_API UCapsuleCheck final : public UCustomBTDecoratorBase
+class PROTOTYPE_API UBTD_CapsuleCheck final : public UCustomBTDecoratorBase
 {
 	GENERATED_BODY()
 
-	UCapsuleCheck();
+	UBTD_CapsuleCheck();
 
 	virtual bool CalcConditionImpl(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 

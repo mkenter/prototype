@@ -27,37 +27,7 @@ void ANavGrid::BeginPlay()
 	OriginLocation = BoxComponent->GetComponentLocation() - BoxComponent->GetScaledBoxExtent();
 	GridTileCount = GetGridTileCount();
 	
-	for (int X = 0; X <= GridTileCount.X; X++)
-	{
-		FYStruct* NewYGridArray = new FYStruct;
-		
-		for (int Y = 0; Y <= GridTileCount.Y; Y++)
-		{
-			FZStruct* NewZGridArray = new FZStruct;
-
-			for (int Z = 0; Z <= GridTileCount.Z; Z++)
-			{
-				FVector ForwardVector = (TileSize * 2.f * X + TileSize) * BoxComponent->GetForwardVector();
-				FVector RightVector = (TileSize * 2.f * Y + TileSize) * BoxComponent->GetRightVector();
-				FVector UpVector = (TileSize * 2.f * Z + TileSize) * BoxComponent->GetUpVector();
-				const FVector TilePosition = OriginLocation + ForwardVector + RightVector + UpVector;
-
-				TArray<AActor*> ActorsToIgnore;
-				FHitResult HitResult;
-				UNavNode* NewNavNode = NewObject<UNavNode>(this);
-				NewNavNode->TileSize = TileSize;
-				NewNavNode->GridLocation = FIntVector(X, Y, Z);
-				NewNavNode->WorldLocation = TilePosition;
-				NewNavNode->bWalkable = !UKismetSystemLibrary::SphereTraceSingle(GetWorld(), TilePosition, TilePosition, TileSize, ETraceTypeQuery::TraceTypeQuery3, false, ActorsToIgnore, EDrawDebugTrace::None, HitResult, true, FLinearColor(1.f, 0.f, 0.f, 1.f), FLinearColor(0.f, 1.f, 0.f, 1.f), 1000.f);
-			
-				NewZGridArray->FGridArray.Add(NewNavNode);
-			}
-			
-			NewYGridArray->SArray.Add(NewZGridArray);
-		}
-
-		Grid.Add(NewYGridArray);
-	}
+	CreateGrid();
 }
 
 // Called every frame
@@ -207,7 +177,7 @@ int ANavGrid::GetDistance(UNavNode* NodeA, UNavNode* NodeB)
 	int SubtractionModifier = 0;
 	TArray<int> Values;
 	Values.Reserve(3);
-	Values.Add(20);
+	Values.Add(22);
 	Values.Add(14);
 	Values.Add(10);
 	
@@ -250,4 +220,39 @@ TArray<UNavNode*> ANavGrid::RetracePath(UNavNode* StartNode, UNavNode* EndNode)
 	Algo::Reverse(BuiltPath);
 
 	return BuiltPath;
+}
+
+void ANavGrid::CreateGrid()
+{
+	for (int X = 0; X <= GridTileCount.X; X++)
+	{
+		FYStruct* NewYGridArray = new FYStruct;
+		
+		for (int Y = 0; Y <= GridTileCount.Y; Y++)
+		{
+			FZStruct* NewZGridArray = new FZStruct;
+
+			for (int Z = 0; Z <= GridTileCount.Z; Z++)
+			{
+				FVector ForwardVector = (TileSize * 2.f * X + TileSize) * BoxComponent->GetForwardVector();
+				FVector RightVector = (TileSize * 2.f * Y + TileSize) * BoxComponent->GetRightVector();
+				FVector UpVector = (TileSize * 2.f * Z + TileSize) * BoxComponent->GetUpVector();
+				const FVector TilePosition = OriginLocation + ForwardVector + RightVector + UpVector;
+
+				TArray<AActor*> ActorsToIgnore;
+				FHitResult HitResult;
+				UNavNode* NewNavNode = NewObject<UNavNode>(this);
+				NewNavNode->TileSize = TileSize;
+				NewNavNode->GridLocation = FIntVector(X, Y, Z);
+				NewNavNode->WorldLocation = TilePosition;
+				NewNavNode->bWalkable = !UKismetSystemLibrary::SphereTraceSingle(GetWorld(), TilePosition, TilePosition, TileSize, ETraceTypeQuery::TraceTypeQuery3, false, ActorsToIgnore, EDrawDebugTrace::None, HitResult, true, FLinearColor(1.f, 0.f, 0.f, 1.f), FLinearColor(0.f, 1.f, 0.f, 1.f), 1000.f);
+			
+				NewZGridArray->FGridArray.Add(NewNavNode);
+			}
+			
+			NewYGridArray->SArray.Add(NewZGridArray);
+		}
+
+		Grid.Add(NewYGridArray);
+	}
 }

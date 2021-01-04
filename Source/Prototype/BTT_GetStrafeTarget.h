@@ -4,20 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/Tasks/BTTask_BlackboardBase.h"
-#include "GetWaypoints.generated.h"
+#include "BTT_GetStrafeTarget.generated.h"
 
-class AFlyingEnemy;
 /**
  * 
  */
 UCLASS()
-class PROTOTYPE_API UGetWaypoints : public UBTTask_BlackboardBase
+class PROTOTYPE_API UBTT_GetStrafeTarget final : public UBTTask_BlackboardBase
 {
 	GENERATED_BODY()
-
-	UGetWaypoints();
+	
+	UBTT_GetStrafeTarget();
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-
+	
 };
-

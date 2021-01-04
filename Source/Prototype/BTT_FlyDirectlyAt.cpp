@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "FlyDirectlyAt.h"
+#include "BTT_FlyDirectlyAt.h"
 
 #include "Helpers.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-UFlyDirectlyAt::UFlyDirectlyAt()
+UBTT_FlyDirectlyAt::UBTT_FlyDirectlyAt()
 {
 	NodeName = "Fly Directly At";
 	bNotifyTick = true;
@@ -15,7 +15,7 @@ UFlyDirectlyAt::UFlyDirectlyAt()
 	HeightOffset = 0.f;
 }
 
-EBTNodeResult::Type UFlyDirectlyAt::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UBTT_FlyDirectlyAt::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	const FName SelectedBlackboardKey = GetSelectedBlackboardKey();
 	
@@ -43,7 +43,7 @@ EBTNodeResult::Type UFlyDirectlyAt::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	return EBTNodeResult::Failed;
 }
 
-void UFlyDirectlyAt::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, const float DeltaSeconds)
+void UBTT_FlyDirectlyAt::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, const float DeltaSeconds)
 {
 	const FVector SelfLocation = Self->GetActorLocation();
 	FVector CurrentTargetLocation = TargetCharacter->GetActorLocation();

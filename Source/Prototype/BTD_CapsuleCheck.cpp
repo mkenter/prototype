@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "CapsuleCheck.h"
+#include "BTD_CapsuleCheck.h"
 #include "FlyingEnemy.h"
 #include "Helpers.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -9,7 +9,7 @@
 
 class APrototypeCharacter;
 
-UCapsuleCheck::UCapsuleCheck()
+UBTD_CapsuleCheck::UBTD_CapsuleCheck()
 {
 	NodeName = "Capsule Check";
 
@@ -24,7 +24,7 @@ UCapsuleCheck::UCapsuleCheck()
 	HeightOffset = 0.f;
 }
 
-bool UCapsuleCheck::CalcConditionImpl(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
+bool UBTD_CapsuleCheck::CalcConditionImpl(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
 	// UE_LOG(LogTemp, Warning, TEXT("CalculateRawConditionValue"));
 	

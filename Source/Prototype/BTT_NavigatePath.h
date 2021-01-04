@@ -3,34 +3,32 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
-#include "FlyingEnemy.h"
 #include "BehaviorTree/Tasks/BTTask_BlackboardBase.h"
-#include "FlyDirectlyAt.generated.h"
+#include "BTT_NavigatePath.generated.h"
 
-class AEnemy;
+class UNavNode;
+class AFlyingEnemy;
 
 /**
  * 
  */
 UCLASS()
-class PROTOTYPE_API UFlyDirectlyAt final : public UBTTask_BlackboardBase
+class PROTOTYPE_API UBTT_NavigatePath final : public UBTTask_BlackboardBase
 {
 	GENERATED_BODY()
-
-	UFlyDirectlyAt();
+	
+	UBTT_NavigatePath();
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+	
+	UPROPERTY()
+	TArray<UNavNode*> Path;
 
 	UPROPERTY()
-	ACharacter* TargetCharacter;
+	UNavNode* TargetNode;
 
 	UPROPERTY()
 	AFlyingEnemy* Self;
-
-	UPROPERTY(EditAnywhere, Category = "Blackboard")
-	float HeightOffset;
-	
 };
