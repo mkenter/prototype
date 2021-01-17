@@ -38,6 +38,7 @@ bool AFlyingEnemy::FlyToTargetLocation(const FVector CurrentLocation, const FVec
 
 	if (HitResult)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Hit: %s - %s"), *DestinationLocation.ToString(), *HitResult->Location.ToString());
 		return HitResult->bBlockingHit;
 	}
 

@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include "PrototypeProjectile.h"
 #include "GameFramework/GameModeBase.h"
 #include "PrototypeGameMode.generated.h"
 
@@ -11,8 +13,33 @@ class APrototypeGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
+	UPROPERTY()
+	int8 CurrentRoomId;
+
+	UPROPERTY()
+	int8 NextRoomId;
+
+protected:
+	virtual void BeginPlay() override;
+
 public:
 	APrototypeGameMode();
+
+	UFUNCTION()
+    void SpawnRoom(int8 RoomId) const;
+
+	UFUNCTION()
+	void SetCurrentRoomId(int8 NewCurrentRoomId);
+
+	UFUNCTION()
+    int8 GetCurrentRoomId() const;
+
+	UFUNCTION()
+	void DespawnAllButRoom(int8 RoomId) const;
+
+	UFUNCTION()
+	void SpawnAdjacentRooms(int8 RoomId) const;
+
 };
 
 

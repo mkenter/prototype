@@ -22,7 +22,7 @@ EBTNodeResult::Type UBTT_NavigatePath::ExecuteTask(UBehaviorTreeComponent& Owner
 
 	UObject* PathObject = BlackboardComponent->GetValueAsObject(FName("Path"));
 	UWaypointArray* WaypointArray = Cast<UWaypointArray>(PathObject);
-	
+
 	UObject* SelfObject = BlackboardComponent->GetValueAsObject(FName("SelfActor"));
 	AFlyingEnemy* SelfEnemy = Cast<AFlyingEnemy>(SelfObject);
 
@@ -34,8 +34,8 @@ EBTNodeResult::Type UBTT_NavigatePath::ExecuteTask(UBehaviorTreeComponent& Owner
 		return EBTNodeResult::InProgress;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Failed"));
-	
+	UE_LOG(LogTemp, Warning, TEXT("UBTT_NavigatePath::ExecuteTask Failed"));
+
 	return EBTNodeResult::Failed;
 }
 
@@ -46,20 +46,25 @@ void UBTT_NavigatePath::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	if (!TargetNode && Path.Num())
 	{
 		TargetNode = Path.Pop();
-		UKismetSystemLibrary::DrawDebugPoint(GetWorld(), TargetNode->WorldLocation, 16.f, FLinearColor(1.f, 0.f, 0.f, 1.f), 20.f);
+		UKismetSystemLibrary::DrawDebugPoint(GetWorld(), TargetNode->WorldLocation, 16.f,
+		                                     FLinearColor(1.f, 0.f, 0.f, 1.f), 20.f);
 	}
-	
+
 	if ((SelfLocation - TargetNode->WorldLocation).Size() < 100.f)
 	{
-		if (Path.Num()) {
+		if (Path.Num())
+		{
 			TargetNode = Path.Pop();
-			UKismetSystemLibrary::DrawDebugPoint(GetWorld(), TargetNode->WorldLocation, 16.f, FLinearColor(1.f, 0.f, 0.f, 1.f), 20.f);
+			UKismetSystemLibrary::DrawDebugPoint(GetWorld(), TargetNode->WorldLocation, 16.f,
+			                                     FLinearColor(1.f, 0.f, 0.f, 1.f), 20.f);
 			Self->FlyToTargetLocation(SelfLocation, TargetNode->WorldLocation, DeltaSeconds, 1.f);
-		} else
+		}
+		else
 		{
 			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 		}
-	} else
+	}
+	else
 	{
 		Self->FlyToTargetLocation(SelfLocation, TargetNode->WorldLocation, DeltaSeconds, 1.f);
 	}

@@ -4,12 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "AbilitySystemInterface.h"
+#include "CharacterAttributeSet.h"
+#include "CharacterGameplayAbility.h"
 #include "PrototypeCharacter.generated.h"
 
+class UCharacterAbilitySystemComponent;
 class UInputComponent;
+class UAbilitySystemComponent;
 
 UCLASS(config=Game)
-class APrototypeCharacter : public ACharacter
+class APrototypeCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -45,11 +50,41 @@ class APrototypeCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UMotionControllerComponent* L_MotionController;
 
+	UPROPERTY()
+	UCharacterAbilitySystemComponent* AbilitySystemComponent;
+
+	UPROPERTY()
+	UCharacterAttributeSet* AttributeSet;
+
 public:
-	APrototypeCharacter();
+	APrototypeCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	virtual void InitializeAttributes();
+
+	virtual void GiveAbilities(TArray<TSubclassOf<UCharacterGameplayAbility>> AbilitySet);
+
+	virtual void AddStartupEffects(TArray<TSubclassOf<class UGameplayEffect>> Effects);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	TSubclassOf<UGameplayEffect> DefaultAttributeEffect;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
+	TArray<TSubclassOf<UCharacterGameplayAbility>> DefaultAbilities;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
+	TArray<TSubclassOf<class UGameplayEffect>> StartupEffects;
+
+	virtual void PossessedBy(AController* NewController) override;
+	
+	virtual void OnRep_PlayerState() override;
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	void SetMaxWalkSpeed(float NewMaxWalkSpeed) const;
 
 protected:
-	virtual void BeginPlay();
+	virtual void BeginPlay() override;
 
 public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
@@ -79,6 +114,18 @@ public:
 	/** Whether to use motion controller location for aiming. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	uint32 bUsingMotionControllers : 1;
+
+	// Gets the Current value of MoveSpeed
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+    float GetMoveSpeed() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	float GetSprintSpeedMultiplier();
+
+	// Gets the Base value of MoveSpeed
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+    float GetMoveSpeedBaseValue() const;
+
 
 protected:
 	

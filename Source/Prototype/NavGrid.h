@@ -50,7 +50,7 @@ class PROTOTYPE_API ANavGrid final : public AActor
     static int GetDistance(UNavNode* NodeA, UNavNode* NodeB);
 
 	UFUNCTION()
-    TArray<UNavNode*> RetracePath(UNavNode* StartNode, UNavNode* EndNode);
+    TArray<UNavNode*> RetracePath(UNavNode* StartNode, UNavNode* EndNode) const;
 
 	UFUNCTION()
 	void CreateGrid();
@@ -71,12 +71,18 @@ public:
 	UFUNCTION()
     void DrawPath(TArray<UNavNode*> PathToDraw, float Duration) const;
 
+	UPROPERTY(EditAnywhere, Category = "Grid")
+	bool bDrawDebug;
+	
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
 
 };

@@ -3,6 +3,7 @@
 
 #include "Helpers.h"
 #include "DrawDebugHelpers.h"
+#include "PrototypeProjectile.h"
 #include "PhysicsEngine/PhysicsSettings.h"
 
 FCollisionQueryParams UHelpers::ConfigureCollisionParams(FName TraceTag, bool bTraceComplex, const TArray<AActor*>& ActorsToIgnore, bool bIgnoreSelf, UObject* WorldContextObject)
@@ -154,7 +155,9 @@ bool UHelpers::CapsuleTraceSingle(UObject* WorldContextObject, const FVector Sta
 
 bool UHelpers::SimpleCapsuleTrace(UWorld* World, const FVector Start, const FVector End, const float CapsuleRadius, float CapsuleHalfHeight, FHitResult& HitResultOut, bool bIsDebug)
 {
-	const TArray<AActor*> ActorsToIgnore;
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Reserve(10);
+	
 	return CapsuleTraceSingle(World, Start, End, CapsuleRadius, CapsuleHalfHeight, false, ActorsToIgnore, EDrawDebugTrace::ForDuration, HitResultOut, true, FLinearColor(0, 255, 0, 0), FLinearColor(255, 0, 0, 0), 0.f);
 }
 

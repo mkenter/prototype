@@ -14,7 +14,7 @@ AEnemy::AEnemy()
 	PrimaryActorTick.bCanEverTick = false;
 
 	KeepAtDistance = 800.f;
-	
+
 	SenseConfig_Sight = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SenseConfig_Sight"));
 	SenseConfig_Sight->SightRadius = 1000.f;
 	SenseConfig_Sight->LoseSightRadius = 1200.f;
@@ -27,12 +27,29 @@ AEnemy::AEnemy()
 	PerceptionComponent->ConfigureSense(*SenseConfig_Sight);
 	PerceptionComponent->SetDominantSense(UAISenseConfig_Sight::StaticClass());
 	PerceptionComponent->OnPerceptionUpdated.AddDynamic(this, &AEnemy::OnPerceptionUpdated);
+
+	CurrentHitpoints = 100.f;
+	TotalHitpoints = 100.f;
+}
+
+float AEnemy::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
+                         AActor* DamageCauser)
+{
+	if (CurrentHitpoints > Damage)
+	{
+		CurrentHitpoints -= Damage;
+		return Damage;
+	}
+
+	CurrentHitpoints = 0.f;
+	Die();
+
+	return CurrentHitpoints;
 }
 
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 void AEnemy::Tick(const float DeltaTime)
@@ -43,7 +60,6 @@ void AEnemy::Tick(const float DeltaTime)
 void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
 }
 
 void AEnemy::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
@@ -51,8 +67,8 @@ void AEnemy::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
 	if (CurrentTarget || !UpdatedActors.Num())
 	{
 		return;
-    }
-	
+	}
+
 	for (AActor* Actor : UpdatedActors)
 	{
 		/**
@@ -66,7 +82,7 @@ void AEnemy::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
 			 * Set target class property and BB value
 			 */
 			CurrentTarget = Character;
-			
+
 			AController* MyController = GetController();
 			AEnemyAIController* EnemyAIController = Cast<AEnemyAIController>(MyController);
 
@@ -74,8 +90,13 @@ void AEnemy::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
 			{
 				EnemyAIController->BlackboardComponent->SetValueAsObject(FName("Target"), Character);
 			}
-			
+
 			break;
 		}
 	}
+}
+
+void AEnemy::Die()
+{
+	Destroy();
 }
