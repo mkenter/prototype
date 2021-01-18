@@ -1,13 +1,13 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "PrototypeGameMode.h"
-#include "Enemy.h"
-#include "PrototypeHUD.h"
-#include "PrototypeCharacter.h"
-#include "RoomChanger.h"
-#include "SpawnPoint.h"
+#include "Characters/Enemies/Enemy.h"
+#include "UI/PrototypeHUD.h"
+#include "Characters/Player/PrototypeCharacter.h"
+#include "Gameplay/PRoomChanger.h"
+#include "Gameplay/PSpawnPoint.h"
 #include "Kismet/GameplayStatics.h"
-#include "PPlayerController.h"
+#include "Characters/Player/PPlayerController.h"
 #include "UObject/ConstructorHelpers.h"
 
 APrototypeGameMode::APrototypeGameMode()
@@ -35,11 +35,11 @@ void APrototypeGameMode::BeginPlay()
 void APrototypeGameMode::SpawnRoom(const int8 RoomId) const
 {
 	TArray<AActor*> PossibleSpawnPoints;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASpawnPoint::StaticClass(), PossibleSpawnPoints);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APSpawnPoint::StaticClass(), PossibleSpawnPoints);
 
 	for (AActor* CurrentActor : PossibleSpawnPoints)
 	{
-		ASpawnPoint* SpawnPoint = Cast<ASpawnPoint>(CurrentActor);
+		APSpawnPoint* SpawnPoint = Cast<APSpawnPoint>(CurrentActor);
 
 		if (SpawnPoint && SpawnPoint->RoomId == RoomId)
 		{
@@ -77,11 +77,11 @@ void APrototypeGameMode::DespawnAllButRoom(int8 RoomId) const
 void APrototypeGameMode::SpawnAdjacentRooms(int8 RoomId) const
 {
 	TArray<AActor*> PossibleRoomChangers;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARoomChanger::StaticClass(), PossibleRoomChangers);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APRoomChanger::StaticClass(), PossibleRoomChangers);
 
 	for (AActor* PossibleRoomChanger : PossibleRoomChangers)
 	{
-		ARoomChanger* RoomChanger = Cast<ARoomChanger>(PossibleRoomChanger);
+		APRoomChanger* RoomChanger = Cast<APRoomChanger>(PossibleRoomChanger);
 
 		if (RoomChanger)
 		{

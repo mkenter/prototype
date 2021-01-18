@@ -3,8 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
-#include "PrototypeProjectile.h"
 #include "GameFramework/GameModeBase.h"
 #include "PrototypeGameMode.generated.h"
 

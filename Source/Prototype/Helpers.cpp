@@ -3,7 +3,7 @@
 
 #include "Helpers.h"
 #include "DrawDebugHelpers.h"
-#include "PrototypeProjectile.h"
+#include "Gameplay/PrototypeProjectile.h"
 #include "PhysicsEngine/PhysicsSettings.h"
 
 FCollisionQueryParams UHelpers::ConfigureCollisionParams(FName TraceTag, bool bTraceComplex, const TArray<AActor*>& ActorsToIgnore, bool bIgnoreSelf, UObject* WorldContextObject)
