@@ -2,9 +2,9 @@
 
 
 #include "PRoomChanger.h"
-#include "Prototype/Characters/Player/PrototypeCharacter.h"
 #include "Components/BillboardComponent.h"
 #include "Components/BoxComponent.h"
+#include "Prototype/Characters/Player/PPlayerCharacter.h"
 
 // Sets default values
 APRoomChanger::APRoomChanger()
@@ -40,7 +40,7 @@ void APRoomChanger::BeginPlay()
 void APRoomChanger::OnBoxComponentOneBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	APrototypeCharacter* Char = Cast<APrototypeCharacter>(OtherActor);
+	APPlayerCharacter* Char = Cast<APPlayerCharacter>(OtherActor);
 
 	if (Char)
 	{
@@ -51,7 +51,7 @@ void APRoomChanger::OnBoxComponentOneBeginOverlap(UPrimitiveComponent* Overlappe
 void APRoomChanger::OnBoxComponentTwoBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	APrototypeCharacter* Char = Cast<APrototypeCharacter>(OtherActor);
+	APPlayerCharacter* Char = Cast<APPlayerCharacter>(OtherActor);
 
 	if (Char)
 	{

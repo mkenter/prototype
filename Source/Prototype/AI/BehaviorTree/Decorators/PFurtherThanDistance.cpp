@@ -3,9 +3,9 @@
 
 #include "PFurtherThanDistance.h"
 
-#include "../../../Characters/Enemies/Enemy.h"
-#include "../../../Characters/Player/PrototypeCharacter.h"
+#include "Prototype/Characters/Enemies/Enemy.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Prototype/Characters/Player/PPlayerCharacter.h"
 
 UPFurtherThanDistance::UPFurtherThanDistance()
 {
@@ -29,7 +29,7 @@ bool UPFurtherThanDistance::CalcConditionImpl(UBehaviorTreeComponent& OwnerComp,
 	
 	const FName SelectedBlackboardKey = GetSelectedBlackboardKey();
 	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject(SelectedBlackboardKey);
-	const APrototypeCharacter* Character = Cast<APrototypeCharacter>(Target);
+	const APPlayerCharacter* Character = Cast<APPlayerCharacter>(Target);
 
 	const UObject* SelfObject = OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName("SelfActor"));
 	const AEnemy* SelfEnemy = Cast<AEnemy>(SelfObject);

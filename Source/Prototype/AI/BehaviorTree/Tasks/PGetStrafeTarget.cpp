@@ -53,14 +53,14 @@ EBTNodeResult::Type UPGetStrafeTarget::ExecuteTask(UBehaviorTreeComponent& Owner
 		FHitResult RightHitResult;
 		TArray<AActor*> ActorsToIgnore;
 		
-		const bool LeftTraceHit = UKismetSystemLibrary::CapsuleTraceSingle(GetWorld(), CurrentLocation, LeftVector, CapsuleComponent->GetScaledCapsuleRadius(), CapsuleComponent->GetScaledCapsuleHalfHeight(), ETraceTypeQuery::TraceTypeQuery1, false, ActorsToIgnore, EDrawDebugTrace::ForDuration, LeftHitResult, true, FLinearColor::Green, FLinearColor::Red, 2.f);
+		const bool LeftTraceHit = UKismetSystemLibrary::CapsuleTraceSingle(GetWorld(), CurrentLocation, LeftVector, CapsuleComponent->GetScaledCapsuleRadius(), CapsuleComponent->GetScaledCapsuleHalfHeight(), ETraceTypeQuery::TraceTypeQuery1, false, ActorsToIgnore, EDrawDebugTrace::None, LeftHitResult, true, FLinearColor::Green, FLinearColor::Red, 2.f);
 
 		if (LeftTraceHit)
 		{
 			LeftVector = LeftHitResult.Location;
 		}
 
-		const bool RightTraceHit = UKismetSystemLibrary::CapsuleTraceSingle(GetWorld(), CurrentLocation, RightVector, CapsuleComponent->GetScaledCapsuleRadius(), CapsuleComponent->GetScaledCapsuleHalfHeight(), ETraceTypeQuery::TraceTypeQuery1, false, ActorsToIgnore, EDrawDebugTrace::ForDuration, RightHitResult, true, FLinearColor::Green, FLinearColor::Red, 2.f);
+		const bool RightTraceHit = UKismetSystemLibrary::CapsuleTraceSingle(GetWorld(), CurrentLocation, RightVector, CapsuleComponent->GetScaledCapsuleRadius(), CapsuleComponent->GetScaledCapsuleHalfHeight(), ETraceTypeQuery::TraceTypeQuery1, false, ActorsToIgnore, EDrawDebugTrace::None, RightHitResult, true, FLinearColor::Green, FLinearColor::Red, 2.f);
 
 		if (RightTraceHit)
 		{
@@ -70,9 +70,9 @@ EBTNodeResult::Type UPGetStrafeTarget::ExecuteTask(UBehaviorTreeComponent& Owner
 		FHitResult LeftSightHitResult;
 		FHitResult RightSightHitResult;
 
-		const bool LeftSightTraceHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), LeftVector, CharacterLocation, ETraceTypeQuery::TraceTypeQuery1, false, ActorsToIgnore, EDrawDebugTrace::ForDuration, LeftSightHitResult, true, FLinearColor::Green, FLinearColor::Red, 2.f);
+		const bool LeftSightTraceHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), LeftVector, CharacterLocation, ETraceTypeQuery::TraceTypeQuery1, false, ActorsToIgnore, EDrawDebugTrace::None, LeftSightHitResult, true, FLinearColor::Green, FLinearColor::Red, 2.f);
 
-		const bool RightSightTraceHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), RightVector, CharacterLocation, ETraceTypeQuery::TraceTypeQuery1, false, ActorsToIgnore, EDrawDebugTrace::ForDuration, RightSightHitResult, true, FLinearColor::Green, FLinearColor::Red, 2.f);
+		const bool RightSightTraceHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), RightVector, CharacterLocation, ETraceTypeQuery::TraceTypeQuery1, false, ActorsToIgnore, EDrawDebugTrace::None, RightSightHitResult, true, FLinearColor::Green, FLinearColor::Red, 2.f);
 
 		TArray<FVector> PossibleLocations;
 		PossibleLocations.Reserve(2);
@@ -105,7 +105,7 @@ EBTNodeResult::Type UPGetStrafeTarget::ExecuteTask(UBehaviorTreeComponent& Owner
 
 		BlackboardComponent->SetValueAsBool(FName("bShouldStrafe"), true);
 
-		UKismetSystemLibrary::DrawDebugPoint(GetWorld(), BlackboardComponent->GetValueAsVector(FName("StrafeTargetLocation")), 16.f, FLinearColor::Blue, 10.f);
+		// UKismetSystemLibrary::DrawDebugPoint(GetWorld(), BlackboardComponent->GetValueAsVector(FName("StrafeTargetLocation")), 16.f, FLinearColor::Blue, 10.f);
 		
 		return EBTNodeResult::Succeeded;
 	}

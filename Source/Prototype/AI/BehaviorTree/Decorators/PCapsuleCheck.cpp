@@ -2,10 +2,10 @@
 
 
 #include "PCapsuleCheck.h"
-#include "../../../Helpers.h"
+#include "Prototype/Helpers.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Prototype/Characters/Player/PrototypeCharacter.h"
+#include "Prototype/Characters/Player/PPlayerCharacter.h"
 
 UPCapsuleCheck::UPCapsuleCheck()
 {
@@ -28,7 +28,7 @@ bool UPCapsuleCheck::CalcConditionImpl(UBehaviorTreeComponent& OwnerComp, uint8*
 	
 	const FName SelectedBlackboardKey = GetSelectedBlackboardKey();
 	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject(SelectedBlackboardKey);
-	const APrototypeCharacter* TargetCharacter = Cast<APrototypeCharacter>(Target);
+	const APPlayerCharacter* TargetCharacter = Cast<APPlayerCharacter>(Target);
 
 	const UObject* SelfObject = OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName("SelfActor"));
 	const ACharacter* SelfCharacter = Cast<ACharacter>(SelfObject);

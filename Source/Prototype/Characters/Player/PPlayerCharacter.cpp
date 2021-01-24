@@ -2,14 +2,19 @@
 
 
 #include "PPlayerCharacter.h"
+#include "PPlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Prototype/Prototype.h"
 #include "Prototype/Characters/Player/PCharacterMovementComponent.h"
 #include "Prototype/Characters/Abilities/PBaseAbilitySystemComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 
 void APPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	MeshComponent->SetVisibility(false, true);
 }
 
 void APPlayerCharacter::MoveForward(float Value)
@@ -42,6 +47,9 @@ void APPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 {
 	check(InputComponent);
 
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	
 	PlayerInputComponent->BindAxis("MoveForward", this, &APPlayerCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &APPlayerCharacter::MoveRight);
 
@@ -49,7 +57,15 @@ void APPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis("TurnRate", this, &APPlayerCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &APPlayerCharacter::LookUpAtRate);
-	
+
+	if (AbilitySystemComponent && InputComponent)
+	{
+		const FGameplayAbilityInputBinds Binds("Confirm", "Cancel", "EAbilitySystemInputID",
+		                                       static_cast<int32>(EAbilitySystemInputID::Confirm),
+		                                       static_cast<int32>(EAbilitySystemInputID::Cancel));
+
+		AbilitySystemComponent->BindAbilityActivationToInputComponent(InputComponent, Binds);
+	}
 }
 
 APPlayerCharacter::APPlayerCharacter(const class FObjectInitializer& ObjectInitializer) :
@@ -57,17 +73,16 @@ APPlayerCharacter::APPlayerCharacter(const class FObjectInitializer& ObjectIniti
 		ACharacter::CharacterMovementComponentName))
 {
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
-	
+
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
 
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCameraComponent"));
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
-	FirstPersonCameraComponent->SetRelativeLocation(FVector(-40.f, 1.75f, 64.f));
+	FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
-
+	
 	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
-	MeshComponent->SetOnlyOwnerSee(true);
 	MeshComponent->SetupAttachment(FirstPersonCameraComponent);
 	MeshComponent->bCastDynamicShadow = false;
 	MeshComponent->CastShadow = false;
@@ -79,4 +94,23 @@ APPlayerCharacter::APPlayerCharacter(const class FObjectInitializer& ObjectIniti
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Full);
 
 	AttributeSetBase = CreateDefaultSubobject<UPBaseAttributeSet>(TEXT("AttributeSetBase"));
+}
+
+void APPlayerCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	APPlayerController* PlayerController = Cast<APPlayerController>(NewController);
+
+	if (PlayerController)
+	{
+		PlayerController->CreateHUD();
+	}
+}
+
+void APPlayerCharacter::EquipWeapon(APWeapon* NewWeapon)
+{
+	Super::EquipWeapon(NewWeapon);
+
+	MeshComponent->SetVisibility(true, true);
 }

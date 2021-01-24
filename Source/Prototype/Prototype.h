@@ -10,5 +10,7 @@ enum class EAbilitySystemInputID : uint8
 	None,
 	Confirm,
 	Cancel,
-	Sprint
+	Sprint,
+	FirePrimary,
+	FireSecondary
 };

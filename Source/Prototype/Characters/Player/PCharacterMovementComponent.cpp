@@ -2,12 +2,11 @@
 
 
 #include "PCharacterMovementComponent.h"
-
-#include "Prototype/Characters/Player/PrototypeCharacter.h"
+#include "Prototype/Characters/PCharacterBase.h"
 
 float UPCharacterMovementComponent::GetMaxSpeed() const
 {
-	APrototypeCharacter* Owner = Cast<APrototypeCharacter>(GetOwner());
+	APCharacterBase* Owner = Cast<APCharacterBase>(GetOwner());
 
 	if (!Owner)
 	{

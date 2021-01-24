@@ -31,9 +31,6 @@ public:
 
 	APPlayerCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
-	USkeletalMeshComponent* MeshComponent;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	class UCameraComponent* FirstPersonCameraComponent;
 	
@@ -42,4 +39,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseLookUpRate;
+
+	virtual void PossessedBy(AController* NewController) override;
+
+	virtual void EquipWeapon(APWeapon* NewWeapon) override;
 };

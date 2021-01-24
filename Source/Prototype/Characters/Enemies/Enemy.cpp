@@ -2,12 +2,12 @@
 
 #include "Enemy.h"
 #include "EnemyAIController.h"
-#include "Prototype/Characters/Player/PrototypeCharacter.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Prototype/Characters/Player/PPlayerCharacter.h"
 
 AEnemy::AEnemy()
 {
@@ -74,7 +74,7 @@ void AEnemy::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
 		/**
 		 * Casting to player character in lieu of teams for now
 		 */
-		APrototypeCharacter* Character = Cast<APrototypeCharacter>(Actor);
+		APPlayerCharacter* Character = Cast<APPlayerCharacter>(Actor);
 
 		if (Character)
 		{

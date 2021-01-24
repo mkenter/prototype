@@ -8,6 +8,7 @@
 #include "Prototype/Characters/Abilities/AttributeSets/UPBaseAttributeSet.h"
 #include "PCharacterBase.generated.h"
 
+class APWeapon;
 class UGameplayEffect;
 class UPGameplayAbility;
 class UPBaseAbilitySystemComponent;
@@ -22,8 +23,9 @@ public:
 	// Sets default values for this character's properties
 	APCharacterBase(const class FObjectInitializer& ObjectInitializer);
 
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-
+	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
+	USkeletalMeshComponent* MeshComponent;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
 	TSubclassOf<UGameplayEffect> InitializeAttributesEffect;
 
@@ -32,12 +34,20 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TArray<TSubclassOf<class UGameplayEffect>> StartupEffects;
+	
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+    float GetMoveSpeed() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+    float GetSprintSpeedMultiplier();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, Category = "Abilities")
 	UPBaseAbilitySystemComponent* AbilitySystemComponent;
 
 	UPROPERTY()
@@ -55,5 +65,13 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void PossessedBy(AController* NewController) override;
+
+	UFUNCTION(BlueprintCallable, Category = "GASShooter|Inventory")
+    virtual void EquipWeapon(APWeapon* NewWeapon);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	APWeapon* EquippedWeapon;
 
 };

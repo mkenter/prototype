@@ -13,5 +13,10 @@ UCLASS()
 class PROTOTYPE_API UPBaseAbilitySystemComponent : public UAbilitySystemComponent
 {
 	GENERATED_BODY()
+
+public:
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Abilities")
+    FGameplayAbilitySpecHandle FindAbilitySpecHandleForClass(TSubclassOf<UGameplayAbility> AbilityClass, UObject* OptionalSourceObject=nullptr);
 	
 };
