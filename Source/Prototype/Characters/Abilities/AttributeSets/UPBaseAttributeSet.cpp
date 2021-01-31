@@ -30,7 +30,7 @@ void UPBaseAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute,
 {
 	Super::PreAttributeChange(Attribute, NewValue);
 
-	if (Attribute == GetMaxHealthAttribute()) // GetMaxHealthAttribute comes from the Macros defined at the top of the header
+	if (Attribute == GetMaxHealthAttribute())
 	{
 		AdjustAttributeForMaxChange(Health, MaxHealth, NewValue, GetHealthAttribute());
 	}
@@ -42,21 +42,38 @@ void UPBaseAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute,
 	{
 		AdjustAttributeForMaxChange(Stamina, MaxStamina, NewValue, GetStaminaAttribute());
 	}
+
+	// TODO: Here's where I'd do things like reduce damage by factors like armor or whatever
+	if (Attribute == GetDamageAttribute())
+	{
+		UAbilitySystemComponent* AbilityComp = GetOwningAbilitySystemComponent();
+		float DamageToDeal = NewValue;
+		const float CurrentHealth = GetHealth();
+
+		if (DamageToDeal > CurrentHealth)
+		{
+			DamageToDeal = CurrentHealth;
+		}
+
+		AbilityComp->ApplyModToAttributeUnsafe(GetHealthAttribute(), EGameplayModOp::Additive, DamageToDeal * -1);
+    }
 }
 
 void UPBaseAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
 
-	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
+	const FGameplayAttribute ModifiedAttribute = Data.EvaluatedData.Attribute;
+
+	if (ModifiedAttribute == GetHealthAttribute())
 	{
 		SetHealth(FMath::Clamp(GetHealth(), 0.f, GetMaxHealth()));
 	}
-	else if (Data.EvaluatedData.Attribute == GetStaminaAttribute())
+	else if (ModifiedAttribute == GetStaminaAttribute())
 	{
 		SetStamina(FMath::Clamp(GetStamina(), 0.f, GetMaxStamina()));
 	}
-	else if (Data.EvaluatedData.Attribute == GetManaAttribute())
+	else if (ModifiedAttribute == GetManaAttribute())
 	{
 		SetMana(FMath::Clamp(GetMana(), 0.f, GetMaxMana()));
 	}

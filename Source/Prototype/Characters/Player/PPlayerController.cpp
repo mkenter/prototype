@@ -6,12 +6,7 @@
 
 void APPlayerController::CreateHUD()
 {
-	if (UIHUDWidget)
-	{
-		return;
-	}
-
-	if (!UIHUDWidgetClass)
+	if (UIHUDWidget || !UIHUDWidgetClass)
 	{
 		return;
 	}

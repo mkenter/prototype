@@ -11,12 +11,12 @@ APrototypeProjectile::APrototypeProjectile()
 	// Use a sphere as a simple collision representation
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	CollisionComp->InitSphereRadius(5.0f);
-	// CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
+	CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
 	CollisionComp->OnComponentHit.AddDynamic(this, &APrototypeProjectile::OnHit);
 	// set up a notification for when this component hits something blocking
-	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	CollisionComp->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
-	CollisionComp->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+	// CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	// CollisionComp->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	// CollisionComp->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 
 	// Players can't walk on it
 	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
@@ -42,8 +42,6 @@ APrototypeProjectile::APrototypeProjectile()
 void APrototypeProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                                  FVector NormalImpulse, const FHitResult& Hit)
 {
-	UE_LOG(LogTemp, Warning, TEXT("APrototypeProjectile::OnHit"));
-
 	if (OtherActor)
 	{
 		AController* WeaponInstigator = nullptr;

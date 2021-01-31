@@ -16,6 +16,11 @@ class PROTOTYPE_API APPlayerCharacter : public APCharacterBase
 {
 	GENERATED_BODY()
 
+public:
+
+	APPlayerCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -29,8 +34,6 @@ protected:
 
 public:
 
-	APPlayerCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	class UCameraComponent* FirstPersonCameraComponent;
 	
@@ -42,5 +45,8 @@ public:
 
 	virtual void PossessedBy(AController* NewController) override;
 
-	virtual void EquipWeapon(APWeapon* NewWeapon) override;
+	virtual void EquipWeapon(APWeapon* NewWeapon, const USkeletalMeshSocket* GripSocket, USkeletalMeshComponent* SkeletalMeshComponent) override;
+
+	UPROPERTY(EditAnywhere, Category = "Mesh")
+	USkeletalMeshComponent* MeshComponent;
 };

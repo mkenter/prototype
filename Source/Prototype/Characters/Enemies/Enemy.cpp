@@ -4,16 +4,23 @@
 #include "EnemyAIController.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Prototype/Characters/Abilities/PBaseAbilitySystemComponent.h"
 #include "Prototype/Characters/Player/PPlayerCharacter.h"
+#include "Prototype/UI/PEnemyFloatingWidget.h"
+#include "Prototype/Gameplay/PWeapon.h"
 
-AEnemy::AEnemy()
+AEnemy::AEnemy(const class FObjectInitializer& ObjectInitializer) : APCharacterBase(ObjectInitializer)
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	KeepAtDistance = 800.f;
+
+	GetCapsuleComponent()->BodyInstance.SetCollisionProfileName("Character");
 
 	SenseConfig_Sight = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SenseConfig_Sight"));
 	SenseConfig_Sight->SightRadius = 1000.f;
@@ -28,43 +35,54 @@ AEnemy::AEnemy()
 	PerceptionComponent->SetDominantSense(UAISenseConfig_Sight::StaticClass());
 	PerceptionComponent->OnPerceptionUpdated.AddDynamic(this, &AEnemy::OnPerceptionUpdated);
 
-	CurrentHitpoints = 100.f;
-	TotalHitpoints = 100.f;
-}
+	AbilitySystemComponent = CreateDefaultSubobject<UPBaseAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Full);
 
-float AEnemy::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
-                         AActor* DamageCauser)
-{
-	if (CurrentHitpoints > Damage)
-	{
-		CurrentHitpoints -= Damage;
-		return Damage;
-	}
+	AttributeSetBase = CreateDefaultSubobject<UPBaseAttributeSet>(TEXT("AttributeSetBase"));
 
-	CurrentHitpoints = 0.f;
-	Die();
-
-	return CurrentHitpoints;
+	FloatingWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("FloatingWidgetComponent"));
+	FloatingWidgetComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	FloatingWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
+	FloatingWidgetComponent->SetDrawAtDesiredSize(true);
+	FloatingWidgetComponent->SetVisibility(false);
 }
 
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-}
 
-void AEnemy::Tick(const float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
+	UPEnemyFloatingWidget* EnemyFloatingWidget = Cast<UPEnemyFloatingWidget>(FloatingWidgetComponent->GetUserWidgetObject());
 
-void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	if (EnemyFloatingWidget)
+	{
+		EnemyFloatingWidget->SetOwningEnemy(this);
+	}
+
+	if (StartingWeapon)
+	{
+		const USkeletalMeshSocket* GripSocket = GetMesh()->GetSocketByName("GripPoint");
+
+		if (GripSocket)
+		{
+			FActorSpawnParameters ActorSpawnParams;
+			ActorSpawnParams.SpawnCollisionHandlingOverride =
+                ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		
+			APWeapon* SpawnedWeapon = GetWorld()->SpawnActor<APWeapon>(StartingWeapon, GetActorLocation(), FRotator(0.f), ActorSpawnParams);
+
+			if (SpawnedWeapon)
+			{
+				SpawnedWeapon->OnEquip(this);
+				EquipWeapon(SpawnedWeapon, GripSocket, GetMesh());
+			}
+		}
+	}
 }
 
 void AEnemy::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
 {
-	if (CurrentTarget || !UpdatedActors.Num())
+	if (CurrentTarget || !UpdatedActors.Num() || !IsAlive())
 	{
 		return;
 	}
@@ -84,19 +102,59 @@ void AEnemy::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
 			CurrentTarget = Character;
 
 			AController* MyController = GetController();
-			AEnemyAIController* EnemyAIController = Cast<AEnemyAIController>(MyController);
 
-			if (EnemyAIController)
+			if (MyController)
 			{
-				EnemyAIController->BlackboardComponent->SetValueAsObject(FName("Target"), Character);
-			}
+				AEnemyAIController* EnemyAIController = Cast<AEnemyAIController>(MyController);
 
-			break;
+				if (EnemyAIController)
+				{
+					EnemyAIController->BlackboardComponent->SetValueAsObject(FName("Target"), Character);
+				}
+
+				break;
+			}
 		}
 	}
 }
 
 void AEnemy::Die()
 {
-	Destroy();
+	Super::Die();
+	
+	AController* MyController = GetController();
+
+	if (MyController)
+	{
+		AEnemyAIController* EnemyAIController = Cast<AEnemyAIController>(MyController);
+
+		if (EnemyAIController)
+		{
+			EnemyAIController->BlackboardComponent->SetValueAsObject(FName("Target"), nullptr);
+		}
+	}
+}
+
+void AEnemy::Tick(const float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	const FVector CurrentLocation = GetActorLocation();
+	const FVector PlayerLocation = UGameplayStatics::GetPlayerCharacter(this, 0)->GetActorLocation();
+	const float Distance = (CurrentLocation - PlayerLocation).Size();
+
+	if (!FloatingWidgetComponent)
+	{
+		return;
+	}
+
+	if (Distance <= 1200.f && !FloatingWidgetComponent->GetVisibleFlag())
+	{
+		FloatingWidgetComponent->SetVisibility(true);
+	}
+
+	if (Distance > 1200.f && FloatingWidgetComponent->GetVisibleFlag())
+	{
+		FloatingWidgetComponent->SetVisibility(false);
+	}
 }

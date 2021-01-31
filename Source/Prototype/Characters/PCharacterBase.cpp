@@ -4,20 +4,27 @@
 #include "PCharacterBase.h"
 #include "GameplayEffectTypes.h"
 #include "Abilities/PBaseAbilitySystemComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Prototype/Characters/Abilities/PGameplayAbility.h"
 #include "Prototype/Gameplay/PWeapon.h"
 
-// Sets default values
 APCharacterBase::APCharacterBase(const class FObjectInitializer& ObjectInitializer)
 {
-	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
+
+	GetCapsuleComponent()->BodyInstance.SetCollisionProfileName("Character");
+	DeadTag = FGameplayTag::RequestGameplayTag(FName("State.Dead"));
 }
 
 UAbilitySystemComponent* APCharacterBase::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
+}
+
+UAttributeSet* APCharacterBase::GetAttributeSet() const
+{
+	return AttributeSetBase;
 }
 
 float APCharacterBase::GetMoveSpeed() const
@@ -40,10 +47,14 @@ float APCharacterBase::GetSprintSpeedMultiplier()
 	return 0.f;
 }
 
-// Called when the game starts or when spawned
 void APCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (AbilitySystemComponent)
+	{
+		HealthChangedDelegateHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSetBase->GetHealthAttribute()).AddUObject(this, &APCharacterBase::HealthChanged);
+	}
 }
 
 void APCharacterBase::InitializeAttributes()
@@ -87,13 +98,48 @@ void APCharacterBase::AddStartupEffects(TArray<TSubclassOf<UGameplayEffect>> Eff
 	}
 }
 
-// Called every frame
-void APCharacterBase::Tick(float DeltaTime)
+void APCharacterBase::Die()
 {
-	Super::Tick(DeltaTime);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	AbilitySystemComponent->AddLooseGameplayTag(DeadTag);
+	
+	if (Montage)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance)
+		{
+			AnimInstance->Montage_Play(Montage, 1.f);
+			// AnimInstance->Montage_JumpToSection(FName("Death"), Montage);
+		}
+	}
+	else
+	{
+		Destroy();
+	}
 }
 
-// Called to bind functionality to input
+void APCharacterBase::HealthChanged(const FOnAttributeChangeData& Data)
+{
+	const float Health = Data.NewValue;
+
+	if (Health <= 0 && !AbilitySystemComponent->HasMatchingGameplayTag(DeadTag))
+	{
+		Die();
+	}
+}
+
+void APCharacterBase::DeathEnd()
+{
+	USkeletalMeshComponent* SkeletalMesh = GetMesh();
+	SkeletalMesh->bPauseAnims = true;
+	SkeletalMesh->bNoSkeletonUpdate = true;
+}
+
+bool APCharacterBase::IsAlive() const
+{
+	return !AbilitySystemComponent->HasMatchingGameplayTag(DeadTag);
+}
+
 void APCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -113,7 +159,7 @@ void APCharacterBase::PossessedBy(AController* NewController)
 	}
 }
 
-void APCharacterBase::EquipWeapon(APWeapon* NewWeapon)
+void APCharacterBase::EquipWeapon(APWeapon* NewWeapon, const USkeletalMeshSocket* GripSocket, USkeletalMeshComponent* SkeletalMeshComponent)
 {
 	if (NewWeapon)
 	{
@@ -121,13 +167,11 @@ void APCharacterBase::EquipWeapon(APWeapon* NewWeapon)
 		NewWeapon->SkeletalMeshComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 		NewWeapon->SkeletalMeshComponent->SetSimulatePhysics(false);
 
-		const USkeletalMeshSocket* GripSocket = MeshComponent->GetSocketByName("GripPoint");
-
 		if (GripSocket)
 		{
-			NewWeapon->AttachToComponent(MeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+			GripSocket->AttachActor(NewWeapon, SkeletalMeshComponent);
+			// NewWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+			EquippedWeapon = NewWeapon;
 		}
-
-		EquippedWeapon = NewWeapon;
 	}	
 }

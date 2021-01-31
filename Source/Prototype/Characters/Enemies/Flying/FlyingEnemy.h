@@ -17,6 +17,10 @@ UCLASS()
 class PROTOTYPE_API AFlyingEnemy final : public AEnemy
 {
 	GENERATED_BODY()
+	
+public:
+
+	AFlyingEnemy(const class FObjectInitializer& ObjectInitializer);
 
 	
 protected:
@@ -27,8 +31,6 @@ protected:
 
 
 public:
-
-	AFlyingEnemy();
 	
 	UFUNCTION()
     bool FlyToTargetLocation(FVector CurrentLocation, FVector TargetLocation, float DeltaTime, float Speed);

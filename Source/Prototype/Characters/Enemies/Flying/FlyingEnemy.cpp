@@ -6,7 +6,7 @@
 #include "Engine/TargetPoint.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-AFlyingEnemy::AFlyingEnemy()
+AFlyingEnemy::AFlyingEnemy(const class FObjectInitializer& ObjectInitializer) : AEnemy(ObjectInitializer)
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;

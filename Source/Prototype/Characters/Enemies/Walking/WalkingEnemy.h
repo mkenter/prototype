@@ -18,22 +18,15 @@ class PROTOTYPE_API AWalkingEnemy : public AEnemy
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "Weapon")
-	USkeletalMeshComponent* WeaponMesh;
+public:
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "Weapon")
-	USceneComponent* MuzzleLocation;
+	AWalkingEnemy(const class FObjectInitializer& ObjectInitializer);
 
+	
+private:
+	
 	UFUNCTION()
 	static float CalculateDirection(const FVector& Velocity, const FRotator& BaseRotation);
-
-	UFUNCTION()
-	void ResetWeaponCooldown();
-	
-	UPROPERTY()
-	bool bWeaponOnCooldown;
-
-	FTimerHandle WeaponTimerHandle;
 
 	
 protected:
@@ -42,35 +35,9 @@ protected:
 
 	virtual void Tick(float DeltaTime) override;
 
-	void FireWeapon();
-
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	float GetCurrentSpeed() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	float GetCurrentDirection() const;
-
-	UFUNCTION(BlueprintCallable, Category = "Movement")
-	bool GetIsInRange() const;
-
-	
-public:
-
-	AWalkingEnemy();
-
-	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
-	TSubclassOf<APrototypeProjectile> ProjectileClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
-	class USoundBase* FireSound;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
-	FVector GunOffset;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-	float RateOfFire;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-	float MaxFiringRange;
-
 };

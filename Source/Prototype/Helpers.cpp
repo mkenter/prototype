@@ -50,14 +50,14 @@ void UHelpers::DrawDebugLineTraceSingle(const UWorld* World, const FVector& Star
 		if (bHit && OutHit.bBlockingHit)
 		{
 			// Red up to the blocking hit, green thereafter
-			::DrawDebugLine(World, Start, OutHit.ImpactPoint, TraceColor.ToFColor(true), bPersistent, LifeTime);
-			::DrawDebugLine(World, OutHit.ImpactPoint, End, TraceHitColor.ToFColor(true), bPersistent, LifeTime);
-			::DrawDebugPoint(World, OutHit.ImpactPoint, 16.f, TraceColor.ToFColor(true), bPersistent, LifeTime);
+			DrawDebugLine(World, Start, OutHit.ImpactPoint, TraceColor.ToFColor(true), bPersistent, LifeTime);
+			DrawDebugLine(World, OutHit.ImpactPoint, End, TraceHitColor.ToFColor(true), bPersistent, LifeTime);
+			DrawDebugPoint(World, OutHit.ImpactPoint, 16.f, TraceColor.ToFColor(true), bPersistent, LifeTime);
 		}
 		else
 		{
 			// no hit means all red
-			::DrawDebugLine(World, Start, End, TraceColor.ToFColor(true), bPersistent, LifeTime);
+			DrawDebugLine(World, Start, End, TraceColor.ToFColor(true), bPersistent, LifeTime);
 		}
 	}
 }
@@ -72,28 +72,26 @@ void UHelpers::DrawDebugCapsuleTraceSingle(const UWorld* World, const FVector& S
 		if (bHit && OutHit.bBlockingHit)
 		{
 			// Red up to the blocking hit, green thereafter
-			::DrawDebugCapsule(World, Start, HalfHeight, Radius, FQuat::Identity, TraceColor.ToFColor(true), bPersistent, LifeTime);
-			::DrawDebugCapsule(World, OutHit.Location, HalfHeight, Radius, FQuat::Identity, TraceColor.ToFColor(true), bPersistent, LifeTime);
-			::DrawDebugLine(World, Start, OutHit.Location, TraceColor.ToFColor(true), bPersistent, LifeTime);
-			::DrawDebugPoint(World, OutHit.ImpactPoint, 16.f, TraceColor.ToFColor(true), bPersistent, LifeTime);
+			DrawDebugCapsule(World, Start, HalfHeight, Radius, FQuat::Identity, TraceColor.ToFColor(true), bPersistent, LifeTime);
+			DrawDebugCapsule(World, OutHit.Location, HalfHeight, Radius, FQuat::Identity, TraceColor.ToFColor(true), bPersistent, LifeTime);
+			DrawDebugLine(World, Start, OutHit.Location, TraceColor.ToFColor(true), bPersistent, LifeTime);
+			DrawDebugPoint(World, OutHit.ImpactPoint, 16.f, TraceColor.ToFColor(true), bPersistent, LifeTime);
 
-			::DrawDebugCapsule(World, End, HalfHeight, Radius, FQuat::Identity, TraceHitColor.ToFColor(true), bPersistent, LifeTime);
-			::DrawDebugLine(World, OutHit.Location, End, TraceHitColor.ToFColor(true), bPersistent, LifeTime);
+			DrawDebugCapsule(World, End, HalfHeight, Radius, FQuat::Identity, TraceHitColor.ToFColor(true), bPersistent, LifeTime);
+			DrawDebugLine(World, OutHit.Location, End, TraceHitColor.ToFColor(true), bPersistent, LifeTime);
 		}
 		else
 		{
 			// no hit means all red
-			::DrawDebugCapsule(World, Start, HalfHeight, Radius, FQuat::Identity, TraceColor.ToFColor(true), bPersistent, LifeTime);
-			::DrawDebugCapsule(World, End, HalfHeight, Radius, FQuat::Identity, TraceColor.ToFColor(true), bPersistent, LifeTime);
-			::DrawDebugLine(World, Start, End, TraceColor.ToFColor(true), bPersistent, LifeTime);
+			DrawDebugCapsule(World, Start, HalfHeight, Radius, FQuat::Identity, TraceColor.ToFColor(true), bPersistent, LifeTime);
+			DrawDebugCapsule(World, End, HalfHeight, Radius, FQuat::Identity, TraceColor.ToFColor(true), bPersistent, LifeTime);
+			DrawDebugLine(World, Start, End, TraceColor.ToFColor(true), bPersistent, LifeTime);
 		}
 	}
 }
 
-bool UHelpers::LineTraceSingle(UObject* WorldContextObject, const FVector Start, const FVector End, const bool bTraceComplex, const TArray<AActor*>& ActorsToIgnore, const EDrawDebugTrace::Type DrawDebugType, FHitResult& OutHit, const bool bIgnoreSelf, const FLinearColor TraceColor, const FLinearColor TraceHitColor, const float DrawTime)
+bool UHelpers::LineTraceSingle(UObject* WorldContextObject, const FVector Start, const FVector End, const bool bTraceComplex, const TArray<AActor*>& ActorsToIgnore, const EDrawDebugTrace::Type DrawDebugType, FHitResult& OutHit, const bool bIgnoreSelf, const FLinearColor TraceColor, const FLinearColor TraceHitColor, const float DrawTime, const ECollisionChannel CollisionChannel)
 {
-	const ECollisionChannel CollisionChannel = ECC_Visibility;
-
 	static const FName LineTraceSingleName(TEXT("LineTraceSingle"));
 	const FCollisionQueryParams Params = ConfigureCollisionParams(LineTraceSingleName, bTraceComplex, ActorsToIgnore, bIgnoreSelf, WorldContextObject);
 
@@ -110,7 +108,7 @@ bool UHelpers::LineTraceSingle(UObject* WorldContextObject, const FVector Start,
 bool UHelpers::SimpleLineTrace(UWorld* World, const FVector Start, const FVector End, FHitResult& HitResultOut, const bool bIsDebug)
 {
 	const TArray<AActor*> ActorsToIgnore;
-	return LineTraceSingle(World, Start, End, false, ActorsToIgnore, EDrawDebugTrace::ForDuration, HitResultOut, true, FLinearColor(0, 255, 0, 0), FLinearColor(255, 0, 0, 0), 0.f);
+	return LineTraceSingle(World, Start, End, false, ActorsToIgnore, EDrawDebugTrace::ForDuration, HitResultOut, true, FLinearColor(0, 255, 0, 0), FLinearColor(255, 0, 0, 0), 0.f, ECC_Visibility);
 }
 
 bool UHelpers::OldLineTrace(UWorld* World, const FVector Start, const FVector End, FHitResult& HitResultOut, const bool bIsDebug, const float DebugLifeTime)

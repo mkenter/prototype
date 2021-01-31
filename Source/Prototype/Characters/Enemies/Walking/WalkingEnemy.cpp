@@ -2,26 +2,11 @@
 
 
 #include "WalkingEnemy.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "Components/SceneComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "TimerManager.h"
-#include "Prototype/Gameplay/PrototypeProjectile.h"
 
-AWalkingEnemy::AWalkingEnemy()
+AWalkingEnemy::AWalkingEnemy(const class FObjectInitializer& ObjectInitializer) : AEnemy(ObjectInitializer)
 {
 	PrimaryActorTick.bCanEverTick = true;
-	
-	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
-	WeaponMesh->SetupAttachment(GetMesh(), FName("GripHand"));
-
-	MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
-	MuzzleLocation->SetupAttachment(WeaponMesh);
-	MuzzleLocation->SetRelativeLocation(FVector(0.25f, 59.f, 11.3f));
-
-	RateOfFire = 1.f;
-	MaxFiringRange = 1000.f;
-	bWeaponOnCooldown = false;
 }
 
 void AWalkingEnemy::BeginPlay()
@@ -32,12 +17,6 @@ void AWalkingEnemy::BeginPlay()
 void AWalkingEnemy::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (CurrentTarget && !bWeaponOnCooldown)
-	{
-		FireWeapon();
-	}
-
 }
 
 float AWalkingEnemy::GetCurrentSpeed() const
@@ -48,21 +27,6 @@ float AWalkingEnemy::GetCurrentSpeed() const
 float AWalkingEnemy::GetCurrentDirection() const
 {
 	return CalculateDirection(GetVelocity(), GetActorRotation());
-}
-
-bool AWalkingEnemy::GetIsInRange() const
-{
-	if (!CurrentTarget || (CurrentTarget->GetActorLocation() - GetActorLocation()).Size() > MaxFiringRange)
-	{
-		return false;
-	}
-
-	return true;
-}
-
-void AWalkingEnemy::ResetWeaponCooldown()
-{
-	bWeaponOnCooldown = false;
 }
 
 float AWalkingEnemy::CalculateDirection(const FVector& Velocity, const FRotator& BaseRotation)
@@ -91,41 +55,4 @@ float AWalkingEnemy::CalculateDirection(const FVector& Velocity, const FRotator&
 	}
 
 	return 0.f;
-}
-
-void AWalkingEnemy::FireWeapon()
-{
-	bWeaponOnCooldown = true;
-	
-	// try and fire a projectile
-	if (ProjectileClass != nullptr)
-	{
-		UWorld* const World = GetWorld();
-
-		if (World)
-		{
-			const FRotator SpawnRotation = GetControlRotation();
-
-			//Set Spawn Collision Handling Override
-			FActorSpawnParameters ActorSpawnParams;
-			ActorSpawnParams.SpawnCollisionHandlingOverride =
-				ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-
-			// spawn the projectile at the muzzle
-			APrototypeProjectile* NewProjectile = World->SpawnActor<APrototypeProjectile>(ProjectileClass, MuzzleLocation->GetComponentLocation(), SpawnRotation, ActorSpawnParams);
-
-			if (NewProjectile)
-			{
-				NewProjectile->SetSpeed(1000.f);
-			}
-		
-			GetWorldTimerManager().SetTimer(WeaponTimerHandle, this, &AWalkingEnemy::ResetWeaponCooldown, RateOfFire);
-		}
-	}
-
-	// try and play the sound if specified
-	if (FireSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
-	}
 }

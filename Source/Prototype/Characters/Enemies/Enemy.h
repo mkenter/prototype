@@ -4,8 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Prototype/Characters/PCharacterBase.h"
 #include "Enemy.generated.h"
 
+class UPUserWidget;
+class UWidgetComponent;
 class AEnemyAIController;
 class UBlackboardData;
 class UAISenseConfig_Sight;
@@ -14,21 +17,23 @@ class UAIPerceptionComponent;
 class UAbilitySystemComponent;
 
 UCLASS()
-class PROTOTYPE_API AEnemy : public ACharacter
+class PROTOTYPE_API AEnemy : public APCharacterBase
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
-	AEnemy();
-
-	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator,
-	                         AActor* DamageCauser) override;
+	
+	AEnemy(const class FObjectInitializer& ObjectInitializer);
 
 
 protected:
-	// Called when the game starts or when spawned
+	
 	virtual void BeginPlay() override;
+
+	UFUNCTION()
+    void OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors);
+
+    virtual void Die() override;
 
 	UPROPERTY(VisibleAnywhere, Category = "AI")
 	ACharacter* CurrentTarget;
@@ -39,19 +44,10 @@ protected:
 	UPROPERTY()
 	UCharacterMovementComponent* MovementComponent;
 
-	UFUNCTION()
-	void OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors);
-
-	UFUNCTION()
-	void Die();
-
 
 public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void Tick(float DeltaSeconds) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI")
 	float KeepAtDistance;
@@ -80,13 +76,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AI")
 	UBlackboardData* BlackboardData;
 
-	UPROPERTY(EditAnywhere, Category = "Stats")
-	float CurrentHitpoints;
-
-	UPROPERTY(EditAnywhere, Category = "Stats")
-	float TotalHitpoints;
-
 	UPROPERTY(VisibleAnywhere, Category = "Gameplay")
 	int8 RoomId;
 
+	UPROPERTY(VisibleAnywhere, Category = "UI")
+	UWidgetComponent* FloatingWidgetComponent;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	UClass* StartingWeapon;
 };

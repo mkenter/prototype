@@ -2,14 +2,19 @@
 
 
 #include "PWeapon.h"
-
+#include "DrawDebugHelpers.h"
 #include "PrototypeProjectile.h"
 #include "Camera/CameraComponent.h"
 #include "Prototype/Characters/Player/PPlayerCharacter.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/SphereComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Prototype/Helpers.h"
 #include "Prototype/Characters/Abilities/PBaseAbilitySystemComponent.h"
 #include "Prototype/Characters/Abilities/PGameplayAbility.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Prototype/Characters/Enemies/Enemy.h"
+
 
 // Sets default values
 APWeapon::APWeapon()
@@ -30,6 +35,8 @@ APWeapon::APWeapon()
 
 	MuzzleLocationComponent = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocationComponent"));
 	MuzzleLocationComponent->SetupAttachment(SkeletalMeshComponent);
+
+	Damage = 20.f;
 }
 
 UAbilitySystemComponent* APWeapon::GetAbilitySystemComponent() const
@@ -86,18 +93,13 @@ void APWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent,
 
 	if (Player)
 	{
-		bIsEquipped = true;
-		Player->EquipWeapon(this);
+		const USkeletalMeshSocket* GripSocket = Player->MeshComponent->GetSocketByName("GripPoint");
 
-		if (AbilitySystemComponent)
+		if (GripSocket)
 		{
-			AbilitySystemComponent->InitAbilityActorInfo(this, this);
-
-			InitializeAttributes();
-			GiveAbilities(DefaultAbilities);
+			OnEquip(Player);
+			Player->EquipWeapon(this, GripSocket, Player->MeshComponent);
 		}
-
-		OwningCharacter = Player;
 	}
 }
 
@@ -112,20 +114,85 @@ void APWeapon::FireProjectile()
 			//Set Spawn Collision Handling Override
 			FActorSpawnParameters ActorSpawnParams;
 			ActorSpawnParams.SpawnCollisionHandlingOverride =
-                ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+                ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 			APPlayerCharacter* Player = Cast<APPlayerCharacter>(OwningCharacter);
+			AEnemy* Enemy = Cast<AEnemy>(OwningCharacter);
 
 			if (Player)
 			{
-				// spawn the projectile at the muzzle
-				APrototypeProjectile* NewProjectile = World->SpawnActor<APrototypeProjectile>(ProjectileClass, MuzzleLocationComponent->GetComponentLocation(), Player->FirstPersonCameraComponent->GetComponentRotation(), ActorSpawnParams);
-
-				if (NewProjectile)
-				{
-					NewProjectile->SetSpeed(1000.f);
-				}
+				World->SpawnActor<APrototypeProjectile>(ProjectileClass, MuzzleLocationComponent->GetComponentLocation(), Player->FirstPersonCameraComponent->GetComponentRotation(), ActorSpawnParams);
+			}
+			else if (Enemy)
+			{
+				World->SpawnActor<APrototypeProjectile>(ProjectileClass, MuzzleLocationComponent->GetComponentLocation(), Enemy->GetActorRotation(), ActorSpawnParams);
 			}
 		}
 	}
 }
+
+ACharacter* APWeapon::FireHitScan()
+{
+	UWorld* const World = GetWorld();
+
+	if (World)
+	{
+		const APPlayerCharacter* Player = Cast<APPlayerCharacter>(OwningCharacter);
+
+		if (Player)
+		{
+			FHitResult HitResult;
+			const TArray<AActor*> ActorsToIgnore;
+			const FVector MuzzleLocation = MuzzleLocationComponent->GetComponentLocation();
+			const FVector TraceEndLocation = MuzzleLocation + Player->FirstPersonCameraComponent->GetForwardVector() * 3000.f;
+			const bool bHit = UHelpers::LineTraceSingle(World, MuzzleLocation, TraceEndLocation, false, ActorsToIgnore, EDrawDebugTrace::None, HitResult, true, FLinearColor::Green, FLinearColor::Red, 1.f, ECC_GameTraceChannel1);
+
+			SpawnFireEffects(Player);
+			SpawnHitEffects(HitResult);
+			
+			if (bHit)
+			{
+				ACharacter* Char = Cast<ACharacter>(HitResult.Actor);
+
+				if (Char)
+				{
+					return Char;
+				}
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+void APWeapon::SpawnFireEffects(const APPlayerCharacter* Player) const
+{
+	if (FireEffects)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), FireEffects, MuzzleLocationComponent->GetComponentLocation(), Player->FirstPersonCameraComponent->GetComponentRotation(), FVector(1.f), true, true, ENCPoolMethod::None, true);
+	}
+}
+
+void APWeapon::SpawnHitEffects(FHitResult HitResult) const
+{
+	if (HitEffects)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HitEffects, HitResult.Location, FRotator(0.f), FVector(1.f), true, true, ENCPoolMethod::None, true);
+	}
+	
+}
+
+void APWeapon::OnEquip(APCharacterBase* NewOwner)
+{
+	bIsEquipped = true;
+	OwningCharacter = NewOwner;
+	
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->InitAbilityActorInfo(this, this);
+
+		InitializeAttributes();
+		GiveAbilities(DefaultAbilities);
+	}
+}
+

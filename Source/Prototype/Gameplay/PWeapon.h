@@ -4,9 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "Abilities/GameplayAbilityTargetTypes.h"
 #include "GameFramework/Actor.h"
+#include "Niagara/Classes/NiagaraSystem.h"
 #include "PWeapon.generated.h"
 
+class APPlayerCharacter;
 class APrototypeProjectile;
 class APCharacterBase;
 class UGameplayEffect;
@@ -67,6 +70,25 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Shooting")
 	void FireProjectile();
 
+	UFUNCTION(BlueprintCallable, Category = "Shooting")
+    ACharacter* FireHitScan();
+
+	void SpawnFireEffects(const APPlayerCharacter* Player) const;
+
+	void SpawnHitEffects(FHitResult HitResult) const;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting")
-	UClass* ProjectileClass; 
+	UClass* ProjectileClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting")
+	float Damage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting")
+	UNiagaraSystem* FireEffects;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting")
+	UNiagaraSystem* HitEffects;
+
+	UFUNCTION()
+	void OnEquip(APCharacterBase* NewOwner);
 };

@@ -10,10 +10,38 @@
 #include "Prototype/Characters/Abilities/PBaseAbilitySystemComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 
+APPlayerCharacter::APPlayerCharacter(const class FObjectInitializer& ObjectInitializer) :
+    Super(ObjectInitializer.SetDefaultSubobjectClass<UPCharacterMovementComponent>(
+        ACharacter::CharacterMovementComponentName))
+{
+	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
+
+	BaseTurnRate = 45.f;
+	BaseLookUpRate = 45.f;
+
+	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCameraComponent"));
+	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
+	FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
+	FirstPersonCameraComponent->bUsePawnControlRotation = true;
+	
+	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
+	MeshComponent->SetupAttachment(FirstPersonCameraComponent);
+	MeshComponent->bCastDynamicShadow = false;
+	MeshComponent->CastShadow = false;
+	MeshComponent->SetRelativeRotation(FRotator(1.9f, -19.19f, 5.2f));
+	MeshComponent->SetRelativeLocation(FVector(-0.5f, -4.4f, -155.7f));
+
+	AbilitySystemComponent = CreateDefaultSubobject<UPBaseAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Full);
+
+	AttributeSetBase = CreateDefaultSubobject<UPBaseAttributeSet>(TEXT("AttributeSetBase"));
+}
+
 void APPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	MeshComponent->SetVisibility(false, true);
 }
 
@@ -68,34 +96,6 @@ void APPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	}
 }
 
-APPlayerCharacter::APPlayerCharacter(const class FObjectInitializer& ObjectInitializer) :
-	Super(ObjectInitializer.SetDefaultSubobjectClass<UPCharacterMovementComponent>(
-		ACharacter::CharacterMovementComponentName))
-{
-	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
-
-	BaseTurnRate = 45.f;
-	BaseLookUpRate = 45.f;
-
-	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCameraComponent"));
-	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
-	FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
-	FirstPersonCameraComponent->bUsePawnControlRotation = true;
-	
-	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
-	MeshComponent->SetupAttachment(FirstPersonCameraComponent);
-	MeshComponent->bCastDynamicShadow = false;
-	MeshComponent->CastShadow = false;
-	MeshComponent->SetRelativeRotation(FRotator(1.9f, -19.19f, 5.2f));
-	MeshComponent->SetRelativeLocation(FVector(-0.5f, -4.4f, -155.7f));
-
-	AbilitySystemComponent = CreateDefaultSubobject<UPBaseAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
-	AbilitySystemComponent->SetIsReplicated(true);
-	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Full);
-
-	AttributeSetBase = CreateDefaultSubobject<UPBaseAttributeSet>(TEXT("AttributeSetBase"));
-}
-
 void APPlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -108,9 +108,9 @@ void APPlayerCharacter::PossessedBy(AController* NewController)
 	}
 }
 
-void APPlayerCharacter::EquipWeapon(APWeapon* NewWeapon)
+void APPlayerCharacter::EquipWeapon(APWeapon* NewWeapon, const USkeletalMeshSocket* GripSocket, USkeletalMeshComponent* SkeletalMeshComponent)
 {
-	Super::EquipWeapon(NewWeapon);
+	Super::EquipWeapon(NewWeapon, GripSocket, SkeletalMeshComponent);
 
 	MeshComponent->SetVisibility(true, true);
 }
