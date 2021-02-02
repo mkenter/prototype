@@ -52,13 +52,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI")
 	float KeepAtDistance;
 
-	UFUNCTION(BlueprintCallable)
-	void SetCurrentTarget(ACharacter* NewTarget)
-	{
-		CurrentTarget = NewTarget;
-	}
+	UFUNCTION(BlueprintCallable, Category = "Targetting")
+	bool SetCurrentTarget(ACharacter* NewTarget);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Targetting")
 	AActor* GetCurrentTarget() const
 	{
 		return CurrentTarget;

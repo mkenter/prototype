@@ -6,6 +6,9 @@
 #include "GameFramework/GameModeBase.h"
 #include "PrototypeGameMode.generated.h"
 
+class UWidgetComponent;
+class AEnemy;
+
 UCLASS(minimalapi)
 class APrototypeGameMode : public AGameModeBase
 {
@@ -38,6 +41,17 @@ public:
 	UFUNCTION()
 	void SpawnAdjacentRooms(int8 RoomId) const;
 
+	UFUNCTION()
+	void PlayerDeath();
+
+	UFUNCTION()
+	TArray<AEnemy*> GetAllEnemies() const;
+	
+	UFUNCTION()
+	void StopAllEnemies() const;
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode")
+	void OnPlayerDeath();
 };
 
 

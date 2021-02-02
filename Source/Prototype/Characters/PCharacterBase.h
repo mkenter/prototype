@@ -46,9 +46,6 @@ protected:
 
 	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere, Category = "Abilities")
-	UPBaseAbilitySystemComponent* AbilitySystemComponent;
-
 	UPROPERTY()
 	UPBaseAttributeSet* AttributeSetBase;
 
@@ -67,16 +64,13 @@ protected:
 	
 	FGameplayTag DeadTag;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	UAnimMontage* Montage;
-
-	UFUNCTION(BlueprintCallable)
-	virtual void DeathEnd();
-
 	virtual bool IsAlive() const;
 	
 
 public:
+	
+	UPROPERTY(VisibleAnywhere, Category = "Abilities")
+	UPBaseAbilitySystemComponent* AbilitySystemComponent;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -87,4 +81,14 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	APWeapon* EquippedWeapon;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* Montage;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void DeathEnd();
+
+	UFUNCTION(BlueprintCallable, Category = "Mesh")
+	virtual USkeletalMeshComponent* GetUsableMesh() const;
+
 };

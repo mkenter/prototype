@@ -2,10 +2,8 @@
 
 
 #include "PFurtherThanDistance.h"
-
 #include "Prototype/Characters/Enemies/Enemy.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Prototype/Characters/Player/PPlayerCharacter.h"
 
 UPFurtherThanDistance::UPFurtherThanDistance()
 {
@@ -29,7 +27,7 @@ bool UPFurtherThanDistance::CalcConditionImpl(UBehaviorTreeComponent& OwnerComp,
 	
 	const FName SelectedBlackboardKey = GetSelectedBlackboardKey();
 	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject(SelectedBlackboardKey);
-	const APPlayerCharacter* Character = Cast<APPlayerCharacter>(Target);
+	const AActor* TargetActor = Cast<AActor>(Target);
 
 	const UObject* SelfObject = OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName("SelfActor"));
 	const AEnemy* SelfEnemy = Cast<AEnemy>(SelfObject);
@@ -41,11 +39,9 @@ bool UPFurtherThanDistance::CalcConditionImpl(UBehaviorTreeComponent& OwnerComp,
 		DistanceToUse = SelfEnemy->KeepAtDistance;
 	}
 
-	if (Character && SelfEnemy)
+	if (TargetActor && SelfEnemy)
 	{
-		// UE_LOG(LogTemp, Warning, TEXT("UFurtherThanDistance: %f"), (Character->GetActorLocation() - SelfActor->GetActorLocation()).Size());
-		// UE_LOG(LogTemp, Warning, TEXT("Regular"));
-		return (Character->GetActorLocation() - SelfEnemy->GetActorLocation()).Size() >= DistanceToUse;
+		return (TargetActor->GetActorLocation() - SelfEnemy->GetActorLocation()).Size() >= DistanceToUse;
 	}
 
 	return false;

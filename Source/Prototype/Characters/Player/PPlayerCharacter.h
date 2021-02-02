@@ -3,16 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GenericTeamAgentInterface.h"
 #include "Prototype/Characters/PCharacterBase.h"
 #include "PPlayerCharacter.generated.h"
 
+class UCameraComponent;
 class USkeletalMeshComponent;
 
 /**
  * 
  */
 UCLASS()
-class PROTOTYPE_API APPlayerCharacter : public APCharacterBase
+class PROTOTYPE_API APPlayerCharacter final : public APCharacterBase, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -32,10 +34,20 @@ protected:
 	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
+	virtual void Die() override;
+
+	virtual void HealthChanged(const FOnAttributeChangeData& Data) override;
+
+	
+private:
+
+	virtual FGenericTeamId GetGenericTeamId() const override;
+	
+	
 public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	class UCameraComponent* FirstPersonCameraComponent;
+	UCameraComponent* FirstPersonCameraComponent;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseTurnRate;
@@ -47,6 +59,11 @@ public:
 
 	virtual void EquipWeapon(APWeapon* NewWeapon, const USkeletalMeshSocket* GripSocket, USkeletalMeshComponent* SkeletalMeshComponent) override;
 
-	UPROPERTY(EditAnywhere, Category = "Mesh")
+	virtual USkeletalMeshComponent* GetUsableMesh() const override;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mesh")
 	USkeletalMeshComponent* MeshComponent;
+
+	UPROPERTY(VisibleAnywhere, Category = "Team")
+	FGenericTeamId TeamId;
 };

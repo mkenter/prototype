@@ -15,7 +15,6 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Prototype/Characters/Enemies/Enemy.h"
 
-
 // Sets default values
 APWeapon::APWeapon()
 {
@@ -137,22 +136,36 @@ ACharacter* APWeapon::FireHitScan()
 
 	if (World)
 	{
+		FHitResult HitResult;
+		const TArray<AActor*> ActorsToIgnore;
+		
+		const FVector MuzzleLocation = MuzzleLocationComponent->GetComponentLocation();
+		FVector TraceEndLocation = FVector(0.f);
+		FRotator Rotation = FRotator(0.f);
+		
 		const APPlayerCharacter* Player = Cast<APPlayerCharacter>(OwningCharacter);
 
 		if (Player)
 		{
-			FHitResult HitResult;
-			const TArray<AActor*> ActorsToIgnore;
-			const FVector MuzzleLocation = MuzzleLocationComponent->GetComponentLocation();
-			const FVector TraceEndLocation = MuzzleLocation + Player->FirstPersonCameraComponent->GetForwardVector() * 3000.f;
+			TraceEndLocation = MuzzleLocation + Player->FirstPersonCameraComponent->GetForwardVector() * 3000.f;
+			Rotation = Player->FirstPersonCameraComponent->GetComponentRotation();
+		}
+		else
+		{
+			TraceEndLocation = MuzzleLocation + OwningCharacter->GetActorForwardVector() * 3000.f;
+			Rotation = OwningCharacter->GetActorRotation();
+		}
+
+		if (Rotation != FRotator(0.f) && TraceEndLocation != FVector(0.f))
+		{
 			const bool bHit = UHelpers::LineTraceSingle(World, MuzzleLocation, TraceEndLocation, false, ActorsToIgnore, EDrawDebugTrace::None, HitResult, true, FLinearColor::Green, FLinearColor::Red, 1.f, ECC_GameTraceChannel1);
 
-			SpawnFireEffects(Player);
+			SpawnFireEffects(Rotation);
 			SpawnHitEffects(HitResult);
 			
 			if (bHit)
 			{
-				ACharacter* Char = Cast<ACharacter>(HitResult.Actor);
+				ACharacter* Char = Cast<ACharacter>(HitResult.GetActor());
 
 				if (Char)
 				{
@@ -165,16 +178,18 @@ ACharacter* APWeapon::FireHitScan()
 	return nullptr;
 }
 
-void APWeapon::SpawnFireEffects(const APPlayerCharacter* Player) const
+void APWeapon::SpawnFireEffects(const FRotator Rotation) const
 {
 	if (FireEffects)
 	{
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), FireEffects, MuzzleLocationComponent->GetComponentLocation(), Player->FirstPersonCameraComponent->GetComponentRotation(), FVector(1.f), true, true, ENCPoolMethod::None, true);
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), FireEffects, MuzzleLocationComponent->GetComponentLocation(), Rotation, FVector(1.f), true, true, ENCPoolMethod::None, true);
 	}
 }
 
 void APWeapon::SpawnHitEffects(FHitResult HitResult) const
 {
+	// TODO: Work with the HitResult.ImpactNormal.Rotation() value to orient the effects instead of using FRotator(0.f)
+	
 	if (HitEffects)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HitEffects, HitResult.Location, FRotator(0.f), FVector(1.f), true, true, ENCPoolMethod::None, true);

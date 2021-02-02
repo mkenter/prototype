@@ -2,9 +2,7 @@
 
 
 #include "PGetStrafeTarget.h"
-
-
-#include "../../../Characters/Enemies/Enemy.h"
+#include "Prototype/Characters/Enemies/Enemy.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -18,7 +16,6 @@ UPGetStrafeTarget::UPGetStrafeTarget()
 
 EBTNodeResult::Type UPGetStrafeTarget::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Execute UGetStrafeTarget"));
 	UBlackboardComponent* BlackboardComponent = OwnerComp.GetBlackboardComponent();
 
 	UObject* Target = BlackboardComponent->GetValueAsObject(FName("Target"));

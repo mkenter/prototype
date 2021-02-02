@@ -105,21 +105,20 @@ void APCharacterBase::Die()
 	
 	if (Montage)
 	{
-		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		UAnimInstance* AnimInstance = GetUsableMesh()->GetAnimInstance();
+		
 		if (AnimInstance)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("APCharacterBase::Die"));
 			AnimInstance->Montage_Play(Montage, 1.f);
-			// AnimInstance->Montage_JumpToSection(FName("Death"), Montage);
+			AnimInstance->Montage_JumpToSection(FName("Death"), Montage);
 		}
-	}
-	else
-	{
-		Destroy();
 	}
 }
 
 void APCharacterBase::HealthChanged(const FOnAttributeChangeData& Data)
 {
+	
 	const float Health = Data.NewValue;
 
 	if (Health <= 0 && !AbilitySystemComponent->HasMatchingGameplayTag(DeadTag))
@@ -130,9 +129,14 @@ void APCharacterBase::HealthChanged(const FOnAttributeChangeData& Data)
 
 void APCharacterBase::DeathEnd()
 {
-	USkeletalMeshComponent* SkeletalMesh = GetMesh();
+	USkeletalMeshComponent* SkeletalMesh = GetUsableMesh();
 	SkeletalMesh->bPauseAnims = true;
 	SkeletalMesh->bNoSkeletonUpdate = true;
+}
+
+USkeletalMeshComponent* APCharacterBase::GetUsableMesh() const
+{
+	return GetMesh();
 }
 
 bool APCharacterBase::IsAlive() const
@@ -170,7 +174,7 @@ void APCharacterBase::EquipWeapon(APWeapon* NewWeapon, const USkeletalMeshSocket
 		if (GripSocket)
 		{
 			GripSocket->AttachActor(NewWeapon, SkeletalMeshComponent);
-			// NewWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+			// NewWeapon->AttachToComponent(GetUsableMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
 			EquippedWeapon = NewWeapon;
 		}
 	}	

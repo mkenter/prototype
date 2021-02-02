@@ -73,7 +73,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Shooting")
     ACharacter* FireHitScan();
 
-	void SpawnFireEffects(const APPlayerCharacter* Player) const;
+	void SpawnFireEffects(const FRotator Rotation) const;
 
 	void SpawnHitEffects(FHitResult HitResult) const;
 

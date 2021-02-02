@@ -5,7 +5,7 @@
 #include "Prototype/Helpers.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Prototype/Characters/Player/PPlayerCharacter.h"
+#include "GameFramework/Character.h"
 
 UPCapsuleCheck::UPCapsuleCheck()
 {
@@ -28,21 +28,21 @@ bool UPCapsuleCheck::CalcConditionImpl(UBehaviorTreeComponent& OwnerComp, uint8*
 	
 	const FName SelectedBlackboardKey = GetSelectedBlackboardKey();
 	UObject* Target = OwnerComp.GetBlackboardComponent()->GetValueAsObject(SelectedBlackboardKey);
-	const APPlayerCharacter* TargetCharacter = Cast<APPlayerCharacter>(Target);
+	const AActor* TargetActor = Cast<AActor>(Target);
 
 	const UObject* SelfObject = OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName("SelfActor"));
 	const ACharacter* SelfCharacter = Cast<ACharacter>(SelfObject);
 
-	if (TargetCharacter && SelfCharacter)
+	if (TargetActor && SelfCharacter)
 	{
 		FHitResult HitResult;
 		
-		FVector CurrentTargetLocation = TargetCharacter->GetActorLocation();
+		FVector CurrentTargetLocation = TargetActor->GetActorLocation();
 		UCapsuleComponent* CapsuleComponent = SelfCharacter->GetCapsuleComponent();
 
 		if (HeightOffset)
 		{
-			CurrentTargetLocation = UHelpers::GetLocationAboveTarget(GetWorld(), TargetCharacter->GetActorLocation(), HeightOffset);
+			CurrentTargetLocation = UHelpers::GetLocationAboveTarget(GetWorld(), TargetActor->GetActorLocation(), HeightOffset);
 		}
 
 		return !UHelpers::SimpleCapsuleTrace(GetWorld(), SelfCharacter->GetActorLocation(), CurrentTargetLocation, CapsuleComponent->GetUnscaledCapsuleRadius(), CapsuleComponent->GetUnscaledCapsuleHalfHeight(), HitResult, true);

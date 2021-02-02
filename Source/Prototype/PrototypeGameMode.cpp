@@ -2,12 +2,14 @@
 
 #include "PrototypeGameMode.h"
 #include "Characters/Enemies/Enemy.h"
+#include "Characters/Player/PPlayerCharacter.h"
 #include "UI/PrototypeHUD.h"
-#include "Characters/Player/PrototypeCharacter.h"
 #include "Gameplay/PRoomChanger.h"
 #include "Gameplay/PSpawnPoint.h"
 #include "Kismet/GameplayStatics.h"
 #include "Characters/Player/PPlayerController.h"
+#include "Components/WidgetComponent.h"
+#include "Gameplay/PWeapon.h"
 #include "UObject/ConstructorHelpers.h"
 
 APrototypeGameMode::APrototypeGameMode()
@@ -60,15 +62,13 @@ int8 APrototypeGameMode::GetCurrentRoomId() const
 
 void APrototypeGameMode::DespawnAllButRoom(int8 RoomId) const
 {
-	TArray<AActor*> PossibleEnemies;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemy::StaticClass(), PossibleEnemies);
+	TArray<AEnemy*> Enemies = GetAllEnemies();
 
-	for (AActor* CurrentActor : PossibleEnemies)
+	for (AEnemy* Enemy : Enemies)
 	{
-		AEnemy* Enemy = Cast<AEnemy>(CurrentActor);
-
-		if (Enemy && Enemy->RoomId != RoomId)
+		if (Enemy->RoomId != RoomId)
 		{
+			Enemy->EquippedWeapon->Destroy();
 			Enemy->Destroy();
 		}
 	}
@@ -95,5 +95,60 @@ void APrototypeGameMode::SpawnAdjacentRooms(int8 RoomId) const
 				SpawnRoom(RoomChanger->BoxComponentOneRoomId);
 			}
 		}
+	}
+}
+
+void APrototypeGameMode::PlayerDeath()
+{
+	UE_LOG(LogTemp, Warning, TEXT("APrototypeGameMode::PlayerDeath"));
+	
+	ACharacter* Character = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+
+	if (Character)
+	{
+		APPlayerCharacter* Player = Cast<APPlayerCharacter>(Character);
+
+		if (Player)
+		{
+			Player->DisableInput(nullptr);
+			StopAllEnemies();
+			OnPlayerDeath();
+
+			// TODO: Figure out why this doesn't work
+			Player->MeshComponent->GetAnimInstance()->Montage_Play(Player->Montage, 1.f);
+			Player->DeathEnd();
+		}
+	}
+}
+
+TArray<AEnemy*> APrototypeGameMode::GetAllEnemies() const
+{
+	TArray<AActor*> Actors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemy::StaticClass(), Actors);
+
+	TArray<AEnemy*> Enemies;
+	Enemies.Reserve(Actors.Num());
+
+	for (AActor* CurrentActor : Actors)
+	{
+		AEnemy* Enemy = Cast<AEnemy>(CurrentActor);
+
+		if (Enemy)
+		{
+			Enemies.Add(Enemy);
+		}
+	}
+
+	return Enemies;
+}
+
+void APrototypeGameMode::StopAllEnemies() const
+{
+	TArray<AEnemy*> Enemies = GetAllEnemies();
+
+	for (AEnemy* Enemy : Enemies)
+	{
+		Enemy->SetCurrentTarget(nullptr);
+		Enemy->DisableInput(nullptr);
 	}
 }

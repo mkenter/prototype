@@ -2,12 +2,9 @@
 
 
 #include "PCanSeeTarget.h"
-
-
 #include "Prototype/Characters/Enemies/Enemy.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "Prototype/Characters/Player/PPlayerCharacter.h"
 
 UPCanSeeTarget::UPCanSeeTarget()
 {
@@ -27,17 +24,17 @@ bool UPCanSeeTarget::CalcConditionImpl(UBehaviorTreeComponent& OwnerComp, uint8*
 	const FName SelectedBlackboardKey = GetSelectedBlackboardKey();
 	const UBlackboardComponent* BlackboardComponent = OwnerComp.GetBlackboardComponent();
 	
-	const APPlayerCharacter* Character = Cast<APPlayerCharacter>(BlackboardComponent->GetValueAsObject((SelectedBlackboardKey)));
+	const AActor* TargetActor = Cast<AActor>(BlackboardComponent->GetValueAsObject((SelectedBlackboardKey)));
 
 	const UObject* SelfObject = BlackboardComponent->GetValueAsObject(FName("SelfActor"));
 	const AEnemy* SelfEnemy = Cast<AEnemy>(SelfObject);
 
-	if (Character && SelfEnemy)
+	if (TargetActor && SelfEnemy)
 	{
 		FHitResult HitResult;
 		const TArray<AActor*> ActorsToIgnore;
 		
-		return !UKismetSystemLibrary::LineTraceSingle(GetWorld(), SelfEnemy->GetActorLocation(), Character->GetActorLocation(), ETraceTypeQuery::TraceTypeQuery1, false, ActorsToIgnore, EDrawDebugTrace::None, HitResult, true, FLinearColor::Green, FLinearColor::Red, 2.f);
+		return !UKismetSystemLibrary::LineTraceSingle(GetWorld(), SelfEnemy->GetActorLocation(), TargetActor->GetActorLocation(), TraceTypeQuery1, false, ActorsToIgnore, EDrawDebugTrace::None, HitResult, true, FLinearColor::Green, FLinearColor::Red, 2.f);
 	}
 
 	return false;

@@ -23,5 +23,8 @@ public:
 
 	UPROPERTY()
 	UBlackboardComponent* BlackboardComponent;
+
+	UPROPERTY(VisibleAnywhere, Category = "Team")
+	FGenericTeamId TeamId;
 	
 };

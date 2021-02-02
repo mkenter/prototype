@@ -24,7 +24,7 @@ AEnemy::AEnemy(const class FObjectInitializer& ObjectInitializer) : APCharacterB
 
 	SenseConfig_Sight = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SenseConfig_Sight"));
 	SenseConfig_Sight->SightRadius = 1000.f;
-	SenseConfig_Sight->LoseSightRadius = 1200.f;
+	SenseConfig_Sight->LoseSightRadius = 2000.f;
 	SenseConfig_Sight->PeripheralVisionAngleDegrees = 45.f;
 	SenseConfig_Sight->DetectionByAffiliation.bDetectNeutrals = true;
 	SenseConfig_Sight->DetectionByAffiliation.bDetectFriendlies = false;
@@ -61,7 +61,7 @@ void AEnemy::BeginPlay()
 
 	if (StartingWeapon)
 	{
-		const USkeletalMeshSocket* GripSocket = GetMesh()->GetSocketByName("GripPoint");
+		const USkeletalMeshSocket* GripSocket = GetUsableMesh()->GetSocketByName("GripPoint");
 
 		if (GripSocket)
 		{
@@ -74,7 +74,7 @@ void AEnemy::BeginPlay()
 			if (SpawnedWeapon)
 			{
 				SpawnedWeapon->OnEquip(this);
-				EquipWeapon(SpawnedWeapon, GripSocket, GetMesh());
+				EquipWeapon(SpawnedWeapon, GripSocket, GetUsableMesh());
 			}
 		}
 	}
@@ -89,29 +89,38 @@ void AEnemy::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
 
 	for (AActor* Actor : UpdatedActors)
 	{
+		// APCharacterBase* PotentialTarget = Cast<APCharacterBase>(Actor);
+		//
+		// if (PotentialTarget)
+		// {
+		// 	AController* MyController = GetController();
+		//
+		// 	if (MyController)
+		// 	{
+		// 		AEnemyAIController* EnemyAIController = Cast<AEnemyAIController>(MyController);
+		//
+		// 		if (EnemyAIController)
+		// 		{
+		// 			CurrentTarget = PotentialTarget;
+		// 			EnemyAIController->BlackboardComponent->SetValueAsObject(FName("Target"), PotentialTarget);
+		// 			break;
+		// 		}
+		// 	}
+		// }
 		/**
 		 * Casting to player character in lieu of teams for now
 		 */
 		APPlayerCharacter* Character = Cast<APPlayerCharacter>(Actor);
-
+		
 		if (Character)
 		{
 			/**
 			 * Set target class property and BB value
 			 */
-			CurrentTarget = Character;
+			const bool bSetTarget = SetCurrentTarget(Character);
 
-			AController* MyController = GetController();
-
-			if (MyController)
+			if (bSetTarget)
 			{
-				AEnemyAIController* EnemyAIController = Cast<AEnemyAIController>(MyController);
-
-				if (EnemyAIController)
-				{
-					EnemyAIController->BlackboardComponent->SetValueAsObject(FName("Target"), Character);
-				}
-
 				break;
 			}
 		}
@@ -122,6 +131,41 @@ void AEnemy::Die()
 {
 	Super::Die();
 	
+	SetCurrentTarget(nullptr);
+}
+
+void AEnemy::Tick(const float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	const FVector CurrentLocation = GetActorLocation();
+	const ACharacter* Player = UGameplayStatics::GetPlayerCharacter(this, 0);
+
+	if (Player)
+	{
+		const FVector PlayerLocation = UGameplayStatics::GetPlayerCharacter(this, 0)->GetActorLocation();
+
+		const float Distance = (CurrentLocation - PlayerLocation).Size();
+
+		if (!FloatingWidgetComponent)
+		{
+			return;
+		}
+
+		if (Distance <= 1200.f && !FloatingWidgetComponent->GetVisibleFlag())
+		{
+			FloatingWidgetComponent->SetVisibility(true);
+		}
+
+		if (Distance > 1200.f && FloatingWidgetComponent->GetVisibleFlag())
+		{
+			FloatingWidgetComponent->SetVisibility(false);
+		}
+	}
+}
+
+bool AEnemy::SetCurrentTarget(ACharacter* NewTarget)
+{
 	AController* MyController = GetController();
 
 	if (MyController)
@@ -130,31 +174,12 @@ void AEnemy::Die()
 
 		if (EnemyAIController)
 		{
-			EnemyAIController->BlackboardComponent->SetValueAsObject(FName("Target"), nullptr);
+			CurrentTarget = NewTarget;
+			EnemyAIController->BlackboardComponent->SetValueAsObject(FName("Target"), NewTarget);
+			
+			return true;
 		}
 	}
-}
-
-void AEnemy::Tick(const float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-
-	const FVector CurrentLocation = GetActorLocation();
-	const FVector PlayerLocation = UGameplayStatics::GetPlayerCharacter(this, 0)->GetActorLocation();
-	const float Distance = (CurrentLocation - PlayerLocation).Size();
-
-	if (!FloatingWidgetComponent)
-	{
-		return;
-	}
-
-	if (Distance <= 1200.f && !FloatingWidgetComponent->GetVisibleFlag())
-	{
-		FloatingWidgetComponent->SetVisibility(true);
-	}
-
-	if (Distance > 1200.f && FloatingWidgetComponent->GetVisibleFlag())
-	{
-		FloatingWidgetComponent->SetVisibility(false);
-	}
+	
+	return false;
 }

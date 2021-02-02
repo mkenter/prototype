@@ -2,7 +2,6 @@
 
 
 #include "PNavigatePath.h"
-
 #include "Prototype/Characters/Enemies/Flying/FlyingEnemy.h"
 #include "Prototype/Navigation/PNavNode.h"
 #include "Prototype/Navigation/PWaypointArray.h"

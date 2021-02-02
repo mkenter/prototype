@@ -3,12 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
 #include "Prototype/PrototypeGameMode.h"
 #include "GameFramework/Actor.h"
 #include "PRoomChanger.generated.h"
 
 class UBoxComponent;
+class UBillboardComponent;
+
 UCLASS()
 class PROTOTYPE_API APRoomChanger final : public AActor
 {

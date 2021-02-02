@@ -3,18 +3,22 @@
 
 #include "PPlayerCharacter.h"
 #include "PPlayerController.h"
+#include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Prototype/Prototype.h"
 #include "Prototype/Characters/Player/PCharacterMovementComponent.h"
 #include "Prototype/Characters/Abilities/PBaseAbilitySystemComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Prototype/PrototypeGameMode.h"
 
 APPlayerCharacter::APPlayerCharacter(const class FObjectInitializer& ObjectInitializer) :
     Super(ObjectInitializer.SetDefaultSubobjectClass<UPCharacterMovementComponent>(
         ACharacter::CharacterMovementComponentName))
 {
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
+
+	TeamId = FGenericTeamId(1);
 
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
@@ -23,7 +27,7 @@ APPlayerCharacter::APPlayerCharacter(const class FObjectInitializer& ObjectIniti
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
-	
+
 	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
 	MeshComponent->SetupAttachment(FirstPersonCameraComponent);
 	MeshComponent->bCastDynamicShadow = false;
@@ -42,7 +46,12 @@ void APPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	MeshComponent->SetVisibility(false, true);
+	GetUsableMesh()->SetVisibility(true, true);
+
+	if (AbilitySystemComponent)
+	{
+		HealthChangedDelegateHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSetBase->GetHealthAttribute()).AddUObject(this, &APPlayerCharacter::HealthChanged);
+	}
 }
 
 void APPlayerCharacter::MoveForward(float Value)
@@ -96,6 +105,49 @@ void APPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	}
 }
 
+void APPlayerCharacter::Die()
+{
+	Super::Die();
+
+	APrototypeGameMode* GameMode = Cast<APrototypeGameMode>(GetWorld()->GetAuthGameMode());
+
+	if (GameMode)
+	{
+		GameMode->PlayerDeath();
+		
+		if (Controller)
+		{
+			APlayerController* PlayerController = Cast<APlayerController>(Controller);
+
+
+			if (PlayerController)
+			{
+				const FAttachmentTransformRules AttachmentTransformRules = FAttachmentTransformRules(EAttachmentRule::KeepRelative, true);
+	
+				ACameraActor* DeathCamera = GetWorld()->SpawnActor<ACameraActor>(ACameraActor::StaticClass(), FVector(0.f, 0.f, 620.f), FRotator(-90.f, 0.f, 0.f));
+				DeathCamera->AttachToActor(this, AttachmentTransformRules);
+
+				PlayerController->SetViewTargetWithBlend(DeathCamera, 5.f, VTBlend_Cubic);
+			}
+		}
+	}
+}
+
+void APPlayerCharacter::HealthChanged(const FOnAttributeChangeData& Data)
+{
+	const float Health = Data.NewValue;
+
+	if (Health <= 0 && !AbilitySystemComponent->HasMatchingGameplayTag(DeadTag))
+	{
+		Die();
+	}
+}
+
+FGenericTeamId APPlayerCharacter::GetGenericTeamId() const
+{
+	return TeamId;
+}
+
 void APPlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -112,5 +164,10 @@ void APPlayerCharacter::EquipWeapon(APWeapon* NewWeapon, const USkeletalMeshSock
 {
 	Super::EquipWeapon(NewWeapon, GripSocket, SkeletalMeshComponent);
 
-	MeshComponent->SetVisibility(true, true);
+	GetUsableMesh()->SetVisibility(true, true);
+}
+
+USkeletalMeshComponent* APPlayerCharacter::GetUsableMesh() const
+{
+	return MeshComponent;
 }

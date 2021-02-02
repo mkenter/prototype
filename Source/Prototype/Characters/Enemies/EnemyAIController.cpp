@@ -8,6 +8,8 @@ AEnemyAIController::AEnemyAIController(const FObjectInitializer& ObjectInitializ
     : Super(ObjectInitializer)
 {
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
+	TeamId = FGenericTeamId(10);
+	AAIController::SetGenericTeamId(TeamId);
 }
 
 void AEnemyAIController::SetPawn(APawn* InPawn)
