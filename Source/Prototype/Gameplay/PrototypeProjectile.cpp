@@ -5,6 +5,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Prototype/Characters/PCharacterBase.h"
 
 APrototypeProjectile::APrototypeProjectile()
 {
@@ -24,19 +25,34 @@ APrototypeProjectile::APrototypeProjectile()
 
 	// Set as root component
 	RootComponent = CollisionComp;
+	
+	// Stats
+	InitialSpeed = 3000.f;
+	MaxSpeed = 3000.f;
+	Damage = 60.f;
 
 	// Use a ProjectileMovementComponent to govern this projectile's movement
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileComp"));
 	ProjectileMovement->UpdatedComponent = CollisionComp;
-	ProjectileMovement->InitialSpeed = 3000.f;
-	ProjectileMovement->MaxSpeed = 3000.f;
+	ProjectileMovement->InitialSpeed = InitialSpeed;
+	ProjectileMovement->MaxSpeed = MaxSpeed;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = false;
 
 	// Die after 3 seconds by default
 	InitialLifeSpan = 3.0f;
+}
 
-	Damage = 60.f;
+void APrototypeProjectile::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	AActor* InstigatorActor = GetInstigator();
+
+	if (InstigatorActor)
+	{
+		CollisionComp->IgnoreActorWhenMoving(InstigatorActor, true);
+	}
 }
 
 void APrototypeProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
@@ -44,23 +60,14 @@ void APrototypeProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActo
 {
 	if (OtherActor)
 	{
-		AController* WeaponInstigator = nullptr;
-		const TSubclassOf<UDamageType> DamageTypeClass;
-		
-		UGameplayStatics::ApplyDamage(OtherActor, Damage, WeaponInstigator, this, DamageTypeClass);
+		APCharacterBase* Character = Cast<APCharacterBase>(OtherActor);
+
+		if (Character)
+		{
+			OnHitEvent(Character);
+			Character->PlayHitReactAnimation();
+		}
 	}
 
 	Destroy();
-}
-
-void APrototypeProjectile::SetSpeed(const float NewSpeed) const
-{
-	ProjectileMovement->InitialSpeed = NewSpeed;
-	ProjectileMovement->MaxSpeed = NewSpeed;
-}
-
-void APrototypeProjectile::SetSpeed(const float NewInitialSpeed, const float NewMaxSpeed) const
-{
-	ProjectileMovement->InitialSpeed = NewInitialSpeed;
-	ProjectileMovement->MaxSpeed = NewMaxSpeed;
 }

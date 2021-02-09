@@ -14,6 +14,7 @@
 #include "Prototype/Characters/Abilities/PGameplayAbility.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Prototype/Characters/Enemies/Enemy.h"
+#include "Prototype/Characters/Enemies/Walking/WalkingEnemy.h"
 
 // Sets default values
 APWeapon::APWeapon()
@@ -110,10 +111,10 @@ void APWeapon::FireProjectile()
 
 		if (World)
 		{
-			//Set Spawn Collision Handling Override
 			FActorSpawnParameters ActorSpawnParams;
-			ActorSpawnParams.SpawnCollisionHandlingOverride =
-                ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			ActorSpawnParams.Instigator = OwningCharacter;
+			ActorSpawnParams.Owner = OwningCharacter;
 
 			APPlayerCharacter* Player = Cast<APPlayerCharacter>(OwningCharacter);
 			AEnemy* Enemy = Cast<AEnemy>(OwningCharacter);
@@ -121,11 +122,14 @@ void APWeapon::FireProjectile()
 			if (Player)
 			{
 				World->SpawnActor<APrototypeProjectile>(ProjectileClass, MuzzleLocationComponent->GetComponentLocation(), Player->FirstPersonCameraComponent->GetComponentRotation(), ActorSpawnParams);
+				
 			}
 			else if (Enemy)
 			{
 				World->SpawnActor<APrototypeProjectile>(ProjectileClass, MuzzleLocationComponent->GetComponentLocation(), Enemy->GetActorRotation(), ActorSpawnParams);
 			}
+
+			OwningCharacter->PlayFireRifleAnimation();
 		}
 	}
 }
@@ -194,7 +198,6 @@ void APWeapon::SpawnHitEffects(FHitResult HitResult) const
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HitEffects, HitResult.Location, FRotator(0.f), FVector(1.f), true, true, ENCPoolMethod::None, true);
 	}
-	
 }
 
 void APWeapon::OnEquip(APCharacterBase* NewOwner)

@@ -100,20 +100,8 @@ void APCharacterBase::AddStartupEffects(TArray<TSubclassOf<UGameplayEffect>> Eff
 
 void APCharacterBase::Die()
 {
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	AbilitySystemComponent->AddLooseGameplayTag(DeadTag);
-	
-	if (Montage)
-	{
-		UAnimInstance* AnimInstance = GetUsableMesh()->GetAnimInstance();
-		
-		if (AnimInstance)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("APCharacterBase::Die"));
-			AnimInstance->Montage_Play(Montage, 1.f);
-			AnimInstance->Montage_JumpToSection(FName("Death"), Montage);
-		}
-	}
+	PlayDeathAnimation();
 }
 
 void APCharacterBase::HealthChanged(const FOnAttributeChangeData& Data)
@@ -129,9 +117,9 @@ void APCharacterBase::HealthChanged(const FOnAttributeChangeData& Data)
 
 void APCharacterBase::DeathEnd()
 {
-	USkeletalMeshComponent* SkeletalMesh = GetUsableMesh();
-	SkeletalMesh->bPauseAnims = true;
-	SkeletalMesh->bNoSkeletonUpdate = true;
+	USkeletalMeshComponent* SkeletalMeshComponent = GetUsableMesh();
+	SkeletalMeshComponent->bPauseAnims = true;
+	SkeletalMeshComponent->bNoSkeletonUpdate = true;
 }
 
 USkeletalMeshComponent* APCharacterBase::GetUsableMesh() const
@@ -139,9 +127,40 @@ USkeletalMeshComponent* APCharacterBase::GetUsableMesh() const
 	return GetMesh();
 }
 
+void APCharacterBase::PlayDeathAnimation()
+{
+}
+
+void APCharacterBase::PlayFireRifleAnimation()
+{
+}
+
+void APCharacterBase::PlayHitReactAnimation()
+{
+}
+
 bool APCharacterBase::IsAlive() const
 {
 	return !AbilitySystemComponent->HasMatchingGameplayTag(DeadTag);
+}
+
+void APCharacterBase::PlayMontageSection(FName Section) const
+{
+	if (Montage)
+	{
+		USkeletalMeshComponent* SkeletalMeshComponent = GetUsableMesh();
+
+		if (SkeletalMeshComponent)
+		{
+			UAnimInstance* AnimInstance = SkeletalMeshComponent->GetAnimInstance();
+
+			if (AnimInstance)
+			{
+				AnimInstance->Montage_Play(Montage, 1.f);
+				AnimInstance->Montage_JumpToSection(Section, Montage);
+			}
+		}
+	}
 }
 
 void APCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

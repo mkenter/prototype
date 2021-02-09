@@ -107,17 +107,18 @@ void AEnemy::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
 		// 		}
 		// 	}
 		// }
+		
 		/**
 		 * Casting to player character in lieu of teams for now
 		 */
-		APPlayerCharacter* Character = Cast<APPlayerCharacter>(Actor);
+		APPlayerCharacter* Player = Cast<APPlayerCharacter>(Actor);
 		
-		if (Character)
+		if (Player)
 		{
 			/**
 			 * Set target class property and BB value
 			 */
-			const bool bSetTarget = SetCurrentTarget(Character);
+			const bool bSetTarget = SetCurrentTarget(Player);
 
 			if (bSetTarget)
 			{
@@ -130,7 +131,8 @@ void AEnemy::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
 void AEnemy::Die()
 {
 	Super::Die();
-	
+
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SetCurrentTarget(nullptr);
 }
 

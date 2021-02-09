@@ -65,6 +65,8 @@ protected:
 	FGameplayTag DeadTag;
 
 	virtual bool IsAlive() const;
+
+	void PlayMontageSection(FName Section) const;
 	
 
 public:
@@ -90,5 +92,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Mesh")
 	virtual USkeletalMeshComponent* GetUsableMesh() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Animation")
+	virtual void PlayDeathAnimation();
+
+	UFUNCTION(BlueprintCallable, Category = "Animation")
+	virtual void PlayFireRifleAnimation();
+
+	UFUNCTION(BlueprintCallable, Category = "Animation")
+	virtual void PlayHitReactAnimation();
 
 };

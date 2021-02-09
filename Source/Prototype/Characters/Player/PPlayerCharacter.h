@@ -36,7 +36,7 @@ protected:
 
 	virtual void Die() override;
 
-	virtual void HealthChanged(const FOnAttributeChangeData& Data) override;
+	// virtual void HealthChanged(const FOnAttributeChangeData& Data) override;
 
 	
 private:
@@ -60,6 +60,10 @@ public:
 	virtual void EquipWeapon(APWeapon* NewWeapon, const USkeletalMeshSocket* GripSocket, USkeletalMeshComponent* SkeletalMeshComponent) override;
 
 	virtual USkeletalMeshComponent* GetUsableMesh() const override;
+
+	virtual void PlayDeathAnimation() override;
+	
+	virtual void PlayFireRifleAnimation() override;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mesh")
 	USkeletalMeshComponent* MeshComponent;

@@ -46,7 +46,7 @@ void APPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	GetUsableMesh()->SetVisibility(true, true);
+	GetUsableMesh()->SetVisibility(false, true);
 
 	if (AbilitySystemComponent)
 	{
@@ -133,15 +133,15 @@ void APPlayerCharacter::Die()
 	}
 }
 
-void APPlayerCharacter::HealthChanged(const FOnAttributeChangeData& Data)
-{
-	const float Health = Data.NewValue;
-
-	if (Health <= 0 && !AbilitySystemComponent->HasMatchingGameplayTag(DeadTag))
-	{
-		Die();
-	}
-}
+// void APPlayerCharacter::HealthChanged(const FOnAttributeChangeData& Data)
+// {
+// 	const float Health = Data.NewValue;
+//
+// 	if (Health <= 0 && !AbilitySystemComponent->HasMatchingGameplayTag(DeadTag))
+// 	{
+// 		Die();
+// 	}
+// }
 
 FGenericTeamId APPlayerCharacter::GetGenericTeamId() const
 {
@@ -170,4 +170,14 @@ void APPlayerCharacter::EquipWeapon(APWeapon* NewWeapon, const USkeletalMeshSock
 USkeletalMeshComponent* APPlayerCharacter::GetUsableMesh() const
 {
 	return MeshComponent;
+}
+
+void APPlayerCharacter::PlayDeathAnimation()
+{
+	PlayMontageSection(FName("Death"));
+}
+
+void APPlayerCharacter::PlayFireRifleAnimation()
+{
+	PlayMontageSection(FName("FireRifle"));
 }

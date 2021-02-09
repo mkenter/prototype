@@ -40,4 +40,22 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	float GetCurrentDirection() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Targetting")
+	bool CheckRange() const;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targetting")
+	float ShootingRange;
+
+	
+public:
+	
+	virtual void PlayDeathAnimation() override;
+	
+	virtual void PlayFireRifleAnimation() override;
+	
+	virtual void PlayHitReactAnimation() override;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Targetting")
+	bool bUseIronSights;
 };

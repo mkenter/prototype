@@ -6,38 +6,52 @@
 #include "GameFramework/Actor.h"
 #include "PrototypeProjectile.generated.h"
 
+class UProjectileMovementComponent;
+class USphereComponent;
+class UMeshComponent;
+class APCharacterBase;
+
 UCLASS(config=Game)
 class APrototypeProjectile : public AActor
 {
 	GENERATED_BODY()
 
-	/** Sphere collision component */
-	UPROPERTY(VisibleDefaultsOnly, Category=Projectile)
-	class USphereComponent* CollisionComp;
-
-	/** Projectile movement component */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-	class UProjectileMovementComponent* ProjectileMovement;
-
 public:
 	APrototypeProjectile();
 
+
+private:
+	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	USphereComponent* CollisionComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	UProjectileMovementComponent* ProjectileMovement;
+
+
+protected:
+	virtual void BeginPlay() override;
+
+
+public:
 	/** called when projectile hits something */
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	/** Returns CollisionComp subobject **/
-	FORCEINLINE class USphereComponent* GetCollisionComp() const { return CollisionComp; }
+	FORCEINLINE USphereComponent* GetCollisionComp() const { return CollisionComp; }
 	/** Returns ProjectileMovement subobject **/
-	FORCEINLINE class UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
+	FORCEINLINE UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
 
 	UPROPERTY(EditAnywhere, Category = "Stats")
 	float Damage;
 
-	void SetSpeed(float NewSpeed) const;
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	float InitialSpeed;
 
-	void SetSpeed(float NewInitialSpeed, float NewMaxSpeed) const;
-	
-	
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	float MaxSpeed;
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Hit")
+	void OnHitEvent(APCharacterBase* HitCharacter);
 };
 

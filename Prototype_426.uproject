@@ -35,6 +35,10 @@
 		{
 			"Name": "NiagaraExtras",
 			"Enabled": true
+		},
+		{
+			"Name": "Water",
+			"Enabled": true
 		}
 	]
 }

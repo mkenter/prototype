@@ -115,8 +115,10 @@ void APrototypeGameMode::PlayerDeath()
 			OnPlayerDeath();
 
 			// TODO: Figure out why this doesn't work
-			Player->MeshComponent->GetAnimInstance()->Montage_Play(Player->Montage, 1.f);
-			Player->DeathEnd();
+			// Player->MeshComponent->GetAnimInstance()->Montage_Play(Player->Montage, 1.f);
+			// Player->DeathEnd();
+
+			Player->PlayDeathAnimation();
 		}
 	}
 }

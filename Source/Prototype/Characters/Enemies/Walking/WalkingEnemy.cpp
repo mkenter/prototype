@@ -7,6 +7,8 @@
 AWalkingEnemy::AWalkingEnemy(const class FObjectInitializer& ObjectInitializer) : AEnemy(ObjectInitializer)
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	ShootingRange = 2000.f;
 }
 
 void AWalkingEnemy::BeginPlay()
@@ -17,6 +19,8 @@ void AWalkingEnemy::BeginPlay()
 void AWalkingEnemy::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	bUseIronSights = CheckRange();
 }
 
 float AWalkingEnemy::GetCurrentSpeed() const
@@ -27,6 +31,41 @@ float AWalkingEnemy::GetCurrentSpeed() const
 float AWalkingEnemy::GetCurrentDirection() const
 {
 	return CalculateDirection(GetVelocity(), GetActorRotation());
+}
+
+bool AWalkingEnemy::CheckRange() const
+{
+	if (CurrentTarget)
+	{
+		const FVector CurrentTargetLocation = CurrentTarget->GetActorLocation();
+		const FVector MyLocation = GetActorLocation();
+		const float Distance = (CurrentTargetLocation - MyLocation).Size();
+
+		return Distance < ShootingRange;
+	}
+	
+	return false;
+}
+
+void AWalkingEnemy::PlayDeathAnimation()
+{
+	PlayMontageSection(FName("Death"));
+}
+
+void AWalkingEnemy::PlayFireRifleAnimation()
+{
+	if (bUseIronSights)
+	{
+		PlayMontageSection(FName("FireRifleIronSights"));
+		return;
+	}
+	
+	PlayMontageSection(FName("FireRifle"));
+}
+
+void AWalkingEnemy::PlayHitReactAnimation()
+{
+	PlayMontageSection(FName("HitReact"));
 }
 
 float AWalkingEnemy::CalculateDirection(const FVector& Velocity, const FRotator& BaseRotation)
